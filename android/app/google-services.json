@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "687748815616",
+    "project_id": "ecostep-8fc01",
+    "storage_bucket": "ecostep-8fc01.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:687748815616:android:ec11a74dc4e89a91e531e5",
+        "android_client_info": {
+          "package_name": "com.example.diplom"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "687748815616-th3brmtsiaj2qqv5nuvh3uctubariirn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMpnw-Yu51yeGZ-bhcNisL7SB_xLIciQ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "687748815616-th3brmtsiaj2qqv5nuvh3uctubariirn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
