@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 class MapRoute {
+  final String path;
   final String id;
   final String start;
   final String end;
@@ -13,17 +14,18 @@ class MapRoute {
       Colors.primaries[Random().nextInt(Colors.primaries.length)];
 
   MapRoute(
-      {this.id = "",
+      {this.path = "",
+      this.id = "",
       this.start = "",
       this.end = "",
       this.polyline = const Polyline(points: []),
       this.distance = 0,
       this.time = 0});
 
-  static MapRoute NewMapRoute(int id, String start, String end,
+  static MapRoute newMapRoute(String id, String start, String end,
       Polyline polyline, double distance, double time) {
-    start = start.split(", ").sublist(2).join(", ");
-    end = end.split(", ").sublist(2).join(", ");
+    start = start.split(", ").sublist(1).join(", ");
+    end = end.split(", ").sublist(1).join(", ");
     return MapRoute(
         id: "${start}_${end}_$id",
         start: start,
@@ -33,13 +35,45 @@ class MapRoute {
         time: time);
   }
 
+  String getRange() {
+    return distance > 1000
+        ? "${(distance / 1000).toStringAsFixed(1)} км"
+        : "$distance м";
+  }
+
+  String getTime() {
+    return time > 3600
+        ? "${(time / 60 / 60).floor()} ч ${(time / 60 % 60).ceil()} мин"
+        : "${(time / 60).ceil()} мин";
+  }
+
+  String getStartPoint() {
+    return "${(polyline.points.first.latitude).toStringAsFixed(2)}, ${(polyline.points.first.longitude).toStringAsFixed(2)}";
+  }
+
+  String getEndPoint() {
+    return "${(polyline.points.last.latitude).toStringAsFixed(2)}, ${(polyline.points.last.longitude).toStringAsFixed(2)}";
+  }
+
   PolylineMapObject getPolylineObj() {
     return PolylineMapObject(
-        mapId: MapObjectId(id),
-        polyline: polyline,
-        strokeColor: strokeColor,
-        strokeWidth: 2,
-        onTap: ((mapObject, point) => {print(this.toJson())}));
+      mapId: MapObjectId(id),
+      polyline: polyline,
+      strokeColor: strokeColor,
+      strokeWidth: 2,
+      outlineWidth: 1,
+      outlineColor: Colors.black54,
+      onTap: (mapObject, point) {},
+    );
+  }
+
+  static Polyline getLine(var points) {
+    return Polyline(
+        points: List.from(points).map((e) {
+      return Point(
+          latitude: Map.from(e)["latitude"],
+          longitude: Map.from(e)["longitude"]);
+    }).toList());
   }
 
   Map<String, dynamic> toJson() {
@@ -53,10 +87,23 @@ class MapRoute {
     };
   }
 
-  // static MapRoute StoreMapRoute(String id, String start, String end,
-  //     MapObject polyline, double distance, DateTime time) {
-  //   MapRoute m = MapRoute();
-  //   m.id = id;
-  //   m.start = m.start;
-  // }
+  static MapRoute fromJson(String path, Map<String, dynamic> json) {
+    return MapRoute(
+      path: path,
+      id: json["id"],
+      start: json["start"],
+      end: json["end"],
+      polyline: getLine(json["polyline"]["points"]),
+      distance: json["distance"],
+      time: json["time"],
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Точка старта: $start (${getStartPoint()})\n'
+        'Точка конца: $end (${getEndPoint()})\n'
+        'Дистанция: ${getRange()}\n'
+        'Время на маршрут: ${getTime()}';
+  }
 }

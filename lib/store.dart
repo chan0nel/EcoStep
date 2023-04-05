@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diplom/classes.dart';
-import 'package:yandex_mapkit/yandex_mapkit.dart';
 
 class Test {
   late String name;
@@ -22,44 +21,24 @@ class DatabaseService {
     List<MapRoute> listData = [];
     await collection.get().then((querySnapshot) {
       for (var doc in querySnapshot.docs) {
-        try {
-          var m = MapRoute(
-              start: doc.data()["start"],
-              end: doc.data()["end"],
-              polyline: getLine(doc.data()["polyline"]["points"]),
-              distance: doc.data()["distance"],
-              id: doc.data()["id"],
-              time: doc.data()["time"]);
-          listData.add(m);
-        } catch (e) {
-          print(e);
-        }
+        listData.add(MapRoute.fromJson(doc.reference.path, doc.data()));
+        print(doc.reference.path);
       }
     });
-    listData.sort((a, b) => a.id.toString().compareTo(b.id.toString()));
     return listData;
   }
 
-  Polyline getLine(var points) {
-    return Polyline(
-        points: List.from(points).map((e) {
-      return Point(
-          latitude: Map.from(e)["latitude"],
-          longitude: Map.from(e)["longitude"]);
-    }).toList());
+  void add({List<dynamic> list = const [], dynamic el}) {
+    if (list.isNotEmpty) {
+      for (var elem in list) {
+        collection.add(elem.toJson());
+      }
+    } else {
+      collection.add(el.toJson());
+    }
   }
 
-  void add({List<dynamic> list = const [], dynamic el}) {
-    try {
-      if (list.isNotEmpty) {
-        for (var elem in list) {
-          collection.add(elem.toJson());
-        }
-      } else {
-        collection.add(el.toJson());
-      }
-    } catch (e) {
-      print(e);
-    }
+  void delete(String path) {
+    collection.doc(path.replaceAll('test/', '')).delete();
   }
 }
