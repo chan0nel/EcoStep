@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:diplom/classes.dart';
+import 'package:diplom/resources/class.dart';
 
 class Test {
   late String name;
@@ -22,7 +22,6 @@ class DatabaseService {
     await collection.get().then((querySnapshot) {
       for (var doc in querySnapshot.docs) {
         listData.add(MapRoute.fromJson(doc.reference.path, doc.data()));
-        print(doc.reference.path);
       }
     });
     return listData;

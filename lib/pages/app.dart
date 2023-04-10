@@ -1,20 +1,8 @@
-import 'package:diplom/classes.dart';
-import 'package:diplom/store.dart';
+import 'package:diplom/resources/class.dart';
+import 'package:diplom/resources/store.dart';
 import 'package:flutter/material.dart';
 import 'package:yandex_mapkit/yandex_mapkit.dart' as maps;
 import 'package:yandex_geocoder/yandex_geocoder.dart' as geo;
-
-class App extends StatelessWidget {
-  const App({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'EcoStep',
-      home: MyHomePage(),
-    );
-  }
-}
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
