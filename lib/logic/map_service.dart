@@ -1,5 +1,5 @@
 // ignore_for_file: file_names
-import 'package:diplom/database/map_route.dart';
+import 'package:diplom/logic/database/map_route.dart';
 import 'package:open_route_service/open_route_service.dart';
 
 class MapService {
@@ -22,7 +22,6 @@ class MapService {
       profileOverride: profile,
       preference: preference,
     );
-    print(routeJSON.bbox);
     return routeJSON.features
         .map((e) => MapRoute.MapRoutefromORS(e, profile))
         .toList();

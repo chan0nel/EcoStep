@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "687748815616",
-    "project_id": "ecostep-8fc01",
-    "storage_bucket": "ecostep-8fc01.appspot.com"
+    "project_number": "81029158780",
+    "project_id": "ecostep-bade2",
+    "storage_bucket": "ecostep-bade2.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:687748815616:android:7a23b92d53c0c353e531e5",
+        "mobilesdk_app_id": "1:81029158780:android:7670faad664174758df6f9",
         "android_client_info": {
           "package_name": "com.example.diplom"
         }
       },
       "oauth_client": [
         {
-          "client_id": "687748815616-th3brmtsiaj2qqv5nuvh3uctubariirn.apps.googleusercontent.com",
+          "client_id": "81029158780-6kcsq9iq25hotdmn77qa0fm7d77d3vho.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAMpnw-Yu51yeGZ-bhcNisL7SB_xLIciQ8"
+          "current_key": "AIzaSyAe-BY06CivvvcIzY3QsgtWf5N6Ue_5-oQ"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "687748815616-th3brmtsiaj2qqv5nuvh3uctubariirn.apps.googleusercontent.com",
+              "client_id": "81029158780-6kcsq9iq25hotdmn77qa0fm7d77d3vho.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
