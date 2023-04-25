@@ -1,29 +1,39 @@
 // ignore_for_file: file_names
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:open_route_service/open_route_service.dart';
+import 'package:geolocator/geolocator.dart';
 
 class MapService {
+  final List<ORSProfile> _profile = [
+    ORSProfile.cyclingRoad,
+    ORSProfile.cyclingElectric,
+    ORSProfile.cyclingMountain,
+    ORSProfile.footWalking,
+    ORSProfile.footHiking,
+    ORSProfile.wheelchair
+  ];
   final OpenRouteService _ors = OpenRouteService(
       apiKey: '5b3ce3597851110001cf624834db9092e45f491c90ae6a9920f89d57');
 
   Future<List<MapRoute>> getRoute({
-    required ORSProfile profile,
+    required int profile,
     required List<ORSCoordinate> points,
-    String preference = 'recommended',
+    int preference = 0,
   }) async {
+    String temp = preference == 0 ? 'recommended' : 'shortest';
     final routeJSON = await _ors.directionsMultiRouteGeoJsonPost(
       instructions: false,
       coordinates: points,
-      alternativeRoutes: preference != 'recommended'
+      alternativeRoutes: preference != 0 && points.length < 3
           ? {'target_count': 3, 'share_factor': 0.5, 'weight_factor': 1.5}
           : null,
       continueStraight: true,
       elevation: true,
-      profileOverride: profile,
-      preference: preference,
+      profileOverride: _profile[profile],
+      preference: temp,
     );
     return routeJSON.features
-        .map((e) => MapRoute.MapRoutefromORS(e, profile))
+        .map((e) => MapRoute.fromORS(e, _profile[profile]))
         .toList();
   }
 
@@ -45,7 +55,7 @@ class MapService {
         },
         elevation: true,
         profileOverride: profile);
-    return MapRoute.MapRoutefromORS(routeJSON.features[0], profile);
+    return MapRoute.fromORS(routeJSON.features[0], profile);
   }
 
   Future<List<Map<String, dynamic>>> search({required text}) async {
@@ -56,5 +66,29 @@ class MapService {
               'point': e.geometry.coordinates,
             })
         .toList();
+  }
+
+  Future<Position> determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    return await Geolocator.getCurrentPosition();
   }
 }

@@ -22,9 +22,9 @@ class DBService {
     return listData;
   }
 
-  void saveRoute(MapRoute mapRoute) async {
+  void saveRoute(MapRoute mapRoute, String name) async {
     try {
-      _collection.add(mapRoute.toJson());
+      _collection.add(mapRoute.toJson(name));
     } catch (ex) {
       // ignore: avoid_print
       print(ex);

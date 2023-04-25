@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:open_route_service/open_route_service.dart';
 
 class MapRoute {
+  late String name;
   late Polyline polyline;
   late List<double> atlitude;
   late double ascent;
@@ -14,8 +15,10 @@ class MapRoute {
   late double duration;
   late ORSProfile profile;
 
+  MapRoute();
+
   // ignore: non_constant_identifier_names
-  MapRoute.MapRoutefromORS(GeoJsonFeature geoJsonFeature, this.profile) {
+  MapRoute.fromORS(GeoJsonFeature geoJsonFeature, this.profile) {
     ascent = geoJsonFeature.properties['ascent'];
     descent = geoJsonFeature.properties['descent'];
     distance = geoJsonFeature.properties['summary']['distance'];
@@ -38,6 +41,7 @@ class MapRoute {
   }
 
   MapRoute.fromJSON(Map<String, dynamic> json) {
+    name = json['name'];
     profile = ORSProfile.values[json['profile']];
     ascent = json['ascent'];
     descent = json['descent'];
@@ -54,7 +58,8 @@ class MapRoute {
     );
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson(String name) => {
+        'name': name,
         'polyline': polyline.points.map((e) => e.toJson()).toList(),
         'atlitude': atlitude,
         'ascent': ascent,

@@ -1,6 +1,44 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 
-class AuthenticationService {
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+
+class AuthenticationService with ChangeNotifier {
+  late User user;
+  late StreamSubscription? userAuthSub;
+
+  AuthenticationService() {
+    userAuthSub = FirebaseAuth.instance.authStateChanges().listen((newUser) {
+      print('AuthProvider - FirebaseAuth - onAuthStateChanged - $newUser');
+      if (newUser == null) throw Exception();
+      user = newUser;
+      notifyListeners();
+    }, onError: (e) {
+      print('AuthProvider - FirebaseAuth - onAuthStateChanged - $e');
+    });
+  }
+
+  @override
+  void dispose() {
+    if (userAuthSub != null) {
+      userAuthSub!.cancel();
+      userAuthSub = null;
+    }
+    super.dispose();
+  }
+
+  bool get isAnonymous {
+    return user.isAnonymous;
+  }
+
+  bool get isVerified {
+    return user.emailVerified;
+  }
+
+  bool get isAuthenticated {
+    return user != null;
+  }
+
   Future<String> signIn({String? email, String? password}) async {
     try {
       final uc = await FirebaseAuth.instance.signInWithEmailAndPassword(
