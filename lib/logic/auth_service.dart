@@ -27,6 +27,10 @@ class AuthenticationService with ChangeNotifier {
     super.dispose();
   }
 
+  String get uid {
+    return user.uid;
+  }
+
   bool get isAnonymous {
     return user.isAnonymous;
   }

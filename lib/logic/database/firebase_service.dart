@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:diplom/logic/database/public_route.dart';
 
 import 'map_route.dart';
 
@@ -22,12 +23,21 @@ class DBService {
     return listData;
   }
 
-  void saveRoute(MapRoute mapRoute, String name) async {
+  Future<String> saveRoute(MapRoute mapRoute, String name) async {
     try {
-      _collection.add(mapRoute.toJson(name));
+      final doc = await _collection.add(mapRoute.toJson(name));
+      return doc.id;
     } catch (ex) {
-      // ignore: avoid_print
-      print(ex);
+      return ex.toString();
+    }
+  }
+
+  Future<String> savePublicRoute(PublicRoute route) async {
+    try {
+      final doc = await _collection.add(route.toJson());
+      return doc.id;
+    } catch (ex) {
+      return ex.toString();
     }
   }
 }

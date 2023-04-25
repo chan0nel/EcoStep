@@ -3,6 +3,7 @@
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
+import 'package:diplom/logic/database/public_route.dart';
 import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/logic/providers.dart';
 import 'package:diplom/widgets/atlitude_chart.dart';
@@ -208,8 +209,14 @@ class _CustomBottomSheetState extends State<CustomBottomSheet> {
                                         onPressed: () async {
                                           if (!value2.isAnonymous &&
                                               value2.isVerified) {
-                                            DBService('map-routes').saveRoute(
-                                                lis[index], 'Маршрут $index');
+                                            final doc =
+                                                await DBService('map-routes')
+                                                    .saveRoute(lis[index],
+                                                        'Маршрут $index');
+                                            final publicRoute = PublicRoute(
+                                                uid: value2.uid, routeid: doc);
+                                            DBService('public-routes')
+                                                .savePublicRoute(publicRoute);
                                           }
                                         },
                                       ),
