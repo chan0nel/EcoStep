@@ -1,22 +1,30 @@
 import 'dart:async';
 
+import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:diplom/logic/database/users.dart' as users;
 
-class AuthenticationService with ChangeNotifier {
-  late User user;
+class AuthenticationService extends ChangeNotifier {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  late User? user;
   late StreamSubscription? userAuthSub;
 
   AuthenticationService() {
-    userAuthSub = FirebaseAuth.instance.authStateChanges().listen((newUser) {
-      if (newUser == null) throw Exception();
-      user = newUser;
-      //notifyListeners();
-    }, onError: (e) {
-      // ignore: avoid_print
-      print('AuthProvider - FirebaseAuth - onAuthStateChanged - $e');
-    });
+    user = _auth.currentUser;
   }
+  //notifyListeners();
+  // userAuthSub = FirebaseAuth.instance.authStateChanges().listen((newUser) {
+  //   if (newUser == null) {
+  //     signUpAnon();
+  //   } else {
+  //     user = newUser;
+  //     notifyListeners();
+  //   }
+  // }, onError: (e) {
+  //   // ignore: avoid_print
+  //   print('AuthProvider - FirebaseAuth - onAuthStateChanged - $e');
+  // });
 
   @override
   void dispose() {
@@ -27,22 +35,30 @@ class AuthenticationService with ChangeNotifier {
     super.dispose();
   }
 
+  bool get isAuthenticated {
+    // ignore: unnecessary_null_comparison
+    return user != null;
+  }
+
   String get uid {
-    return user.uid;
+    return user?.uid ?? '';
   }
 
   bool get isAnonymous {
-    return user.isAnonymous;
+    return user?.isAnonymous ?? true;
   }
 
   bool get isVerified {
-    return user.emailVerified;
+    return user?.emailVerified ?? false;
   }
 
-  Future<String> signIn({String? email, String? password}) async {
+  Future<String> signIn(
+      {String? email, String? password, String? nickname}) async {
     try {
       final uc = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email ?? '', password: password ?? '');
+      users.User u = users.User(uid: uc.user!.uid, name: nickname ?? 'user');
+      await DBService().setUser(u);
       return 'Добро пожаловать, ${uc.additionalUserInfo?.profile?['nickname']}';
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
@@ -104,7 +120,9 @@ class AuthenticationService with ChangeNotifier {
 
   Future<String?> signUpAnon() async {
     try {
-      await FirebaseAuth.instance.signInAnonymously();
+      final uc = await FirebaseAuth.instance.signInAnonymously();
+      users.User u = users.User(uid: uc.user!.uid);
+      await DBService().setUser(u);
       return null;
     } catch (e) {
       return e.toString();
@@ -123,5 +141,6 @@ class AuthenticationService with ChangeNotifier {
       await FirebaseAuth.instance.currentUser!.delete();
     }
     await FirebaseAuth.instance.signOut();
+    await signUpAnon();
   }
 }

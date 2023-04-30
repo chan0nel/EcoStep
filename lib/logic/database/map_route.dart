@@ -18,13 +18,20 @@ class MapRoute {
 
   LatLngBounds get bbox => LatLngBounds.fromPoints(polyline.points);
   String get profile => [
-        'Обычный',
-        'Электрический',
-        'Горный',
-        'Пеший',
+        'Обычный велосипед',
+        'Электрический велосипед',
+        'Горный велосипед',
+        'Прогулка',
         'Туризм',
         'Инвалидная коляска',
       ][inxProfile];
+
+  String get distanceCast => distance / 1000 < 1
+      ? '${distance.toStringAsFixed(0)} м'
+      : '${(distance / 1000).toStringAsFixed(1)} км';
+
+  String get timeCast => Duration(seconds: (duration).round()).toString();
+
   MapRoute();
 
   MapRoute.fromORS(GeoJsonFeature geoJsonFeature, this.inxProfile) {
@@ -52,7 +59,7 @@ class MapRoute {
   MapRoute.fromJSON(Map<String, dynamic> json, String rid) {
     id = rid;
     name = json['name'];
-    inxProfile = json['profile'];
+    inxProfile = json['inxProfile'];
     ascent = json['ascent'];
     descent = json['descent'];
     distance = json['distance'];
@@ -76,7 +83,6 @@ class MapRoute {
         'descent': descent,
         'distance': distance,
         'duration': duration,
-        'inxProfile': inxProfile,
-        'bbox': bbox
+        'inxProfile': inxProfile
       };
 }

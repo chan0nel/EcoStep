@@ -1,5 +1,4 @@
 // ignore_for_file: use_build_context_synchronously, must_be_immutable
-
 import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/logic/providers.dart';
 import 'package:diplom/pages/map_page/add_route_tab_view.dart';

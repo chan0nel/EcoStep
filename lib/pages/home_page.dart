@@ -1,6 +1,9 @@
 import 'package:diplom/pages/map_page/map_page.dart';
+import 'package:diplom/pages/profile_page/profile_page.dart';
 import 'package:diplom/pages/routes_page/routes_page.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,22 +15,36 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  bool showBut = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: Provider.of<InternetConnectionStatus>(context) ==
+              InternetConnectionStatus.disconnected
+          ? AppBar(
+              backgroundColor: Colors.red,
+              title: const Text(
+                'Нет подключения к интернету, '
+                'большинство функций отключены',
+                style: TextStyle(fontSize: 12),
+              ),
+            )
+          : null,
       body: PageView(
         physics: const NeverScrollableScrollPhysics(),
         controller: _pageController,
-        children: [
-          const MapPage(),
-          const RoutesPage(),
-          Container(),
+        children: const [
+          MapPage(),
+          RoutesPage(),
+          ProfilePage(),
         ],
         onPageChanged: (value) {
           setState(() {
-            showBut = value == 0;
             _currentPage = value;
           });
         },

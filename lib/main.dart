@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:diplom/logic/auth_service.dart';
@@ -9,6 +10,9 @@ import 'package:diplom/pages/home_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  if (!AuthenticationService().isAuthenticated) {
+    await AuthenticationService().signUpAnon();
+  }
   runApp(const MyApp());
 }
 
@@ -22,17 +26,16 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => MapModel(),
         ),
-        ChangeNotifierProvider(
-          create: (context) => AuthenticationService(),
-        ),
+        StreamProvider(
+          create: (context) => InternetConnectionChecker().onStatusChange,
+          initialData: InternetConnectionStatus.connected,
+        )
       ],
       child: MaterialApp(
         title: 'EcoStep',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          primarySwatch: Colors.blue,
-        ),
+        theme: ThemeData.light(useMaterial3: true),
+        darkTheme: ThemeData.dark(useMaterial3: true),
         home: const HomePage(),
       ),
     );

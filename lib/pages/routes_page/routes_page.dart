@@ -1,4 +1,4 @@
-// ignore_for_file: unused_field
+// ignore_for_file: unused_field, must_be_immutable
 
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
@@ -19,7 +19,6 @@ class RoutesPage extends StatefulWidget {
 class _RoutesPageState extends State<RoutesPage>
     with AutomaticKeepAliveClientMixin {
   final DBService _service = DBService();
-  final auth = AuthenticationService();
   late Future<List<dynamic>> _pr, _mr, _u;
 
   @override
@@ -59,7 +58,7 @@ class _RoutesPageState extends State<RoutesPage>
       'default': {},
       'other': {}
     };
-    final uid = auth.uid;
+    final uid = AuthenticationService().uid;
     final my = u.firstWhere((element) => element.uid == uid);
     map['yours']['public'] = pr.where((element) => element.uid == uid).toList();
     map['yours']['map'] = mr
@@ -71,6 +70,10 @@ class _RoutesPageState extends State<RoutesPage>
     map['saves']['map'] = mr
         .where((element) =>
             map['saves']['public'].any((el) => el.routeid == element.id))
+        .toList();
+    map['saves']['user'] = u
+        .where((element) =>
+            map['saves']['public'].any((el) => el.uid == element.uid))
         .toList();
     map['default']['public'] =
         pr.where((element) => element.uid == 'default').toList();
@@ -87,6 +90,10 @@ class _RoutesPageState extends State<RoutesPage>
     map['other']['map'] = mr
         .where((element) =>
             map['other']['public'].any((el) => el.routeid == element.id))
+        .toList();
+    map['other']['user'] = u
+        .where((element) =>
+            map['other']['public'].any((el) => el.uid == element.uid))
         .toList();
     return map;
   }
@@ -131,7 +138,8 @@ class _RoutesPageState extends State<RoutesPage>
                             map['default'].cast<String, List<dynamic>>() ?? []),
                     const SliverHeader(text: 'Пользовательские маршруты'),
                     RoutesList(
-                        list: map['other'].cast<String, List<dynamic>>() ?? []),
+                        list: map['other'].cast<String, List<dynamic>>() ?? [],
+                        save: true),
                   ],
                 ),
               );

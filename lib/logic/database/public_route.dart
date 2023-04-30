@@ -3,15 +3,12 @@ class PublicRoute {
   late String routeid;
   List<dynamic> comments = [];
 
-  PublicRoute({
-    required this.uid,
-    required this.routeid,
-  });
+  PublicRoute({required this.uid, this.routeid = '', this.comments = const []});
 
   PublicRoute.fromJSON(Map<String, dynamic> json, String id) {
     uid = json['uid'];
     routeid = id;
-    comments = json['comments'];
+    comments = List<dynamic>.from(json['comments']);
   }
 
   Map<String, dynamic> toJson() => {

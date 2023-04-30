@@ -38,17 +38,22 @@ class SliverHeader extends StatelessWidget {
     return SliverPersistentHeader(
       pinned: true,
       delegate: _SliverAppBarDelegate(
-        minHeight: 60.0,
-        maxHeight: 100.0,
+        minHeight: 30.0,
+        maxHeight: 60.0,
         child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             border: const Border(
               bottom: BorderSide(width: 1, color: Colors.black12),
             ),
             color: Colors.lightBlue[200],
           ),
-          child: Center(
-            child: Text(text),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(text),
+              TextButton(onPressed: () {}, child: const Text('Показать все'))
+            ],
           ),
         ),
       ),

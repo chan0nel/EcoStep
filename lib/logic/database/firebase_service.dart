@@ -24,9 +24,18 @@ class DBService {
       });
     } catch (ex) {
       // ignore: avoid_print
-      print(ex);
+      print('GET ERROR $ex');
     }
     return listData;
+  }
+
+  Future<void> setUser(User us) async {
+    try {
+      await _instance.doc('users/${us.uid}').set(us.toJson());
+    } catch (ex) {
+      // ignore: avoid_print
+      print('SET USER ERROR $ex');
+    }
   }
 
   Future<User> getUser(String uid) async {
