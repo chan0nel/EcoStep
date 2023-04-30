@@ -47,7 +47,8 @@ dependencies:
   material_floating_search_bar: ^0.3.7
   geolocator: ^9.0.2
   syncfusion_flutter_charts: ^21.1.41
-  bottom_bar_with_sheet: ^2.4.0
+  sliding_up_panel: ^2.0.0+1
+  extended_tabs: ^4.0.2
 
 dev_dependencies:
   flutter_test:

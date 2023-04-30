@@ -10,6 +10,7 @@ class CustomField extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = ctrl ?? TextEditingController();
     return TextField(
+      scrollPhysics: const BouncingScrollPhysics(),
       controller: controller,
       decoration: InputDecoration(suffix: suffix),
       textAlignVertical: TextAlignVertical.bottom,

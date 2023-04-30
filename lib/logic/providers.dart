@@ -1,10 +1,11 @@
 import 'dart:collection';
 
-import 'package:diplom/widgets/cust_field.dart';
+import 'package:diplom/logic/map_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:open_route_service/open_route_service.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class MapModel extends ChangeNotifier {
   final List<Polyline> _polylines = [];
@@ -13,15 +14,18 @@ class MapModel extends ChangeNotifier {
     {'ctrl': TextEditingController(), 'point': null}
   ];
   final MapController mapController = MapController();
+  final PanelController panelController = PanelController();
+  ScrollController scrollController = ScrollController();
   final Map<String, dynamic> _states = {
-    'hideSheet': true,
     'editPoint': null,
   };
+  final Map<String, dynamic> _tabs = {'tab': [], 'tab-view': []};
 
   UnmodifiableListView<Polyline> get polylines =>
       UnmodifiableListView(_polylines);
   UnmodifiableListView<Map<String, dynamic>> get points =>
       UnmodifiableListView(_points);
+  UnmodifiableMapView<String, dynamic> get tabs => UnmodifiableMapView(_tabs);
   UnmodifiableMapView<String, dynamic> get states =>
       UnmodifiableMapView(_states);
 
@@ -29,16 +33,17 @@ class MapModel extends ChangeNotifier {
       .where((element) => element['point'] != null)
       .map(
         (element) => Marker(
-          anchorPos: AnchorPos.align(AnchorAlign.top),
+          anchorPos: AnchorPos.align(AnchorAlign.center),
           point: element['point'],
-          width: 36,
-          height: 36,
+          width: 24,
+          height: 24,
           builder: (context) => const Icon(
-            Icons.place,
+            Icons.radio_button_checked,
+            semanticLabel: 'err',
             color: Colors.blueAccent,
-            size: 36,
+            size: 24,
             shadows: [
-              Shadow(blurRadius: 10, color: Colors.black26),
+              Shadow(blurRadius: 5, color: Colors.black26),
             ],
           ),
         ),
@@ -53,11 +58,6 @@ class MapModel extends ChangeNotifier {
           latitude: e['point'].latitude, longitude: e['point'].longitude))
       .toList();
 
-  void setHideSheet(bool value) {
-    _states['hideSheet'] = value;
-    notifyListeners();
-  }
-
   void setEditPoint(int value) {
     _states['editPoint'] = value;
     notifyListeners();
@@ -69,6 +69,7 @@ class MapModel extends ChangeNotifier {
   }
 
   void addAllPolylines(List<Polyline> value) {
+    _polylines.clear();
     _polylines.addAll(value);
     notifyListeners();
   }
@@ -79,15 +80,39 @@ class MapModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addPoint(LatLng value, int index) {
-    _points[index]['point'] = value;
-    _points[index]['ctrl'].text = value.toString();
+  void removeCtrl(int index) {
+    _points.removeAt(index);
     notifyListeners();
   }
 
-  void clear() {
-    _polylines.clear();
+  void addPoint(LatLng value, int index) async {
+    _points[index]['point'] = value;
+    _points[index]['ctrl'].text = await MapService().reverseSearch(value);
+    notifyListeners();
+  }
+
+  void addTab(String name, Widget view) {
+    final idx = _tabs['tab'].indexWhere((el) => el.data == name);
+    if (idx != -1) {
+      _tabs['tab-view'].removeAt(idx);
+      _tabs['tab-view'].insert(idx, view);
+    } else {
+      _tabs['tab'].add(Text(name));
+      _tabs['tab-view'].add(view);
+    }
+    notifyListeners();
+  }
+
+  void clearTabs() {
+    _tabs['tab'].clear();
+    _tabs['tab-view'].clear();
     _points.clear();
+    _points.addAll([
+      {'ctrl': TextEditingController(), 'point': null},
+      {'ctrl': TextEditingController(), 'point': null}
+    ]);
+    _states['editPoint'] = null;
+    _polylines.clear();
     notifyListeners();
   }
 }

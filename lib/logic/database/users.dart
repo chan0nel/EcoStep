@@ -1,19 +1,22 @@
-class PublicRoute {
+class User {
   late String uid;
   late String name;
   late String photo;
+  late List<String> saves;
 
-  PublicRoute();
+  User();
 
-  PublicRoute.fromJSON(Map<String, dynamic> json) {
-    uid = json['uid'];
+  User.fromJSON(Map<String, dynamic> json, String id) {
+    uid = id;
     name = json['name'];
     photo = json['photo'];
+    saves = json['saves'].cast<String>();
   }
 
   Map<String, dynamic> toJson() => {
         'uid': uid,
         'name': name,
         'photo': photo,
+        'saves': saves,
       };
 }

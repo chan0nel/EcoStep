@@ -9,11 +9,11 @@ class AuthenticationService with ChangeNotifier {
 
   AuthenticationService() {
     userAuthSub = FirebaseAuth.instance.authStateChanges().listen((newUser) {
-      print('AuthProvider - FirebaseAuth - onAuthStateChanged - $newUser');
       if (newUser == null) throw Exception();
       user = newUser;
-      notifyListeners();
+      //notifyListeners();
     }, onError: (e) {
+      // ignore: avoid_print
       print('AuthProvider - FirebaseAuth - onAuthStateChanged - $e');
     });
   }
@@ -37,10 +37,6 @@ class AuthenticationService with ChangeNotifier {
 
   bool get isVerified {
     return user.emailVerified;
-  }
-
-  bool get isAuthenticated {
-    return user != null;
   }
 
   Future<String> signIn({String? email, String? password}) async {

@@ -2,17 +2,19 @@
 
 import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/logic/providers.dart';
+import 'package:diplom/pages/map_page/add_route_tab_view.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 class FloatingButtons extends StatelessWidget {
-  const FloatingButtons({super.key});
+  final Function upd;
+  const FloatingButtons({super.key, required this.upd});
 
   @override
   Widget build(BuildContext context) {
     return Consumer<MapModel>(
-      builder: (context, value, child) => value.states['hideSheet'] != true
+      builder: (context, value, child) => value.panelController.isPanelClosed
           ? Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -29,8 +31,11 @@ class FloatingButtons extends StatelessWidget {
                 ),
                 const SizedBox(height: 10.0),
                 FloatingActionButton(
-                  onPressed: () {
-                    value.setHideSheet(false);
+                  onPressed: () async {
+                    value.addTab(
+                        'Составить маршрут', AddRouteTabView(upd: upd));
+                    upd();
+                    await value.panelController.open();
                   },
                   heroTag: null,
                   child: const Icon(Icons.add),

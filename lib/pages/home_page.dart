@@ -1,8 +1,5 @@
-import 'package:bottom_bar_with_sheet/bottom_bar_with_sheet.dart';
-import 'package:diplom/logic/database/firebase_service.dart';
-import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/pages/map_page/map_page.dart';
-import 'package:diplom/widgets/atlitude_chart.dart';
+import 'package:diplom/pages/routes_page/routes_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,26 +10,34 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  int currentPageIndex = 0;
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
   bool showBut = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: [
-        const MapPage(),
-        Container(),
-        Container(),
-      ][currentPageIndex],
+      body: PageView(
+        physics: const NeverScrollableScrollPhysics(),
+        controller: _pageController,
+        children: [
+          const MapPage(),
+          const RoutesPage(),
+          Container(),
+        ],
+        onPageChanged: (value) {
+          setState(() {
+            showBut = value == 0;
+            _currentPage = value;
+          });
+        },
+      ),
       bottomNavigationBar: NavigationBar(
           onDestinationSelected: (int index) {
-            setState(() {
-              currentPageIndex = index;
-              showBut = index == 0;
-            });
+            _pageController.jumpToPage(index);
           },
+          selectedIndex: _currentPage,
           animationDuration: const Duration(milliseconds: 500),
-          selectedIndex: currentPageIndex,
           destinations: const [
             NavigationDestination(
               selectedIcon: Icon(Icons.map),

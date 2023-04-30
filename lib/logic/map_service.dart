@@ -1,5 +1,6 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, avoid_print
 import 'package:diplom/logic/database/map_route.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:open_route_service/open_route_service.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -19,53 +20,87 @@ class MapService {
     required int profile,
     required List<ORSCoordinate> points,
     int preference = 0,
+    bool alt = false,
   }) async {
-    String temp = preference == 0 ? 'recommended' : 'shortest';
-    final routeJSON = await _ors.directionsMultiRouteGeoJsonPost(
-      instructions: false,
-      coordinates: points,
-      alternativeRoutes: preference != 0 && points.length < 3
-          ? {'target_count': 3, 'share_factor': 0.5, 'weight_factor': 1.5}
-          : null,
-      continueStraight: true,
-      elevation: true,
-      profileOverride: _profile[profile],
-      preference: temp,
-    );
-    return routeJSON.features
-        .map((e) => MapRoute.fromORS(e, _profile[profile]))
-        .toList();
+    try {
+      String temp = preference == 0 ? 'recommended' : 'shortest';
+      final routeJSON = await _ors.directionsMultiRouteGeoJsonPost(
+        instructions: false,
+        coordinates: points,
+        alternativeRoutes: alt
+            ? {'target_count': 3, 'share_factor': 0.5, 'weight_factor': 1.5}
+            : null,
+        continueStraight: true,
+        elevation: true,
+        profileOverride: _profile[profile],
+        preference: temp,
+      );
+      return routeJSON.features
+          .map((e) => MapRoute.fromORS(e, profile))
+          .toList();
+    } catch (e) {
+      print('OSR ERROR1: $e');
+      return [];
+    }
   }
 
   Future<MapRoute> getRoundedRoute({
-    required ORSProfile profile,
+    required int profile,
     required List<ORSCoordinate> points,
     int length = 2000,
     int pointsNum = 10,
   }) async {
-    final routeJSON = await _ors.directionsMultiRouteGeoJsonPost(
-        coordinates: points,
-        instructions: false,
-        options: {
-          'round_trip': {
-            'length': length,
-            'points': pointsNum,
-            'seed': DateTime.now().microsecondsSinceEpoch / 1000,
-          }
-        },
-        elevation: true,
-        profileOverride: profile);
-    return MapRoute.fromORS(routeJSON.features[0], profile);
+    try {
+      final routeJSON = await _ors.directionsMultiRouteGeoJsonPost(
+          coordinates: points,
+          instructions: false,
+          options: {
+            'round_trip': {
+              'length': length,
+              'points': pointsNum,
+              'seed': DateTime.now().microsecondsSinceEpoch / 1000,
+            }
+          },
+          elevation: true,
+          profileOverride: _profile[profile]);
+      return MapRoute.fromORS(routeJSON.features[0], profile);
+    } catch (e) {
+      print('OSR ERROR2: $e');
+      return MapRoute();
+    }
+  }
+
+  Future<String> reverseSearch(
+    LatLng point,
+  ) async {
+    try {
+      final searchPoints = await _ors.geocodeReverseGet(
+          point: ORSCoordinate(
+            latitude: point.latitude,
+            longitude: point.longitude,
+          ),
+          size: 1,
+          layers: ['venue', 'address', 'neighbourhood']);
+      return searchPoints.features[0].properties['label'];
+    } catch (e) {
+      print('OSR ERROR3: $e');
+      return '';
+    }
   }
 
   Future<List<Map<String, dynamic>>> search({required text}) async {
-    final searchPoints = await _ors.geocodeAutoCompleteGet(text: text);
-    return searchPoints.features
-        .map((e) => {
-              'label': e.properties['label'],
-              'point': e.geometry.coordinates,
-            })
-        .toList();
+    try {
+      final searchPoints = await _ors.geocodeAutoCompleteGet(text: text);
+      return searchPoints.features
+          .map((e) => {
+                'label': e.properties['label'],
+                'point': e.geometry.coordinates,
+              })
+          .toList();
+    } catch (e) {
+      print('OSR ERROR4: $e');
+      return [];
+    }
   }
 
   Future<Position> determinePosition() async {

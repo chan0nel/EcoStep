@@ -1,20 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diplom/logic/database/public_route.dart';
+import 'package:diplom/logic/database/users.dart';
 
 import 'map_route.dart';
 
 class DBService {
-  // ignore: prefer_final_fields
-  late CollectionReference<Map<String, dynamic>> _collection;
+  final _instance = FirebaseFirestore.instance;
 
-  DBService(String collectionName)
-      : _collection = FirebaseFirestore.instance.collection(collectionName);
-
-  Future<List<MapRoute>> getRoutes() async {
-    List<MapRoute> listData = [];
+  Future<List<dynamic>> get(String collection) async {
+    List<dynamic> listData = [];
     try {
-      await _collection.get().then((query) {
-        listData = query.docs.map((e) => MapRoute.fromJSON(e.data())).toList();
+      await _instance.collection(collection).get().then((query) {
+        listData = query.docs.map((e) {
+          switch (collection) {
+            case 'public-routes':
+              return PublicRoute.fromJSON(e.data(), e.id);
+            case 'map-routes':
+              return MapRoute.fromJSON(e.data(), e.id);
+            case 'users':
+              return User.fromJSON(e.data(), e.id);
+          }
+        }).toList();
       });
     } catch (ex) {
       // ignore: avoid_print
@@ -23,18 +29,40 @@ class DBService {
     return listData;
   }
 
-  Future<String> saveRoute(MapRoute mapRoute, String name) async {
+  Future<User> getUser(String uid) async {
+    User us = User();
     try {
-      final doc = await _collection.add(mapRoute.toJson(name));
-      return doc.id;
+      await _instance.doc('users/$uid').get().then((query) {
+        if (query.data() == null) {
+          throw Exception();
+        } else {
+          us = User.fromJSON(query.data() ?? {}, uid);
+        }
+      });
+    } catch (ex) {
+      // ignore: avoid_print
+      print(ex);
+    }
+    return us;
+  }
+
+  Future<String> savePublicRoute(obj, String id) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('public-routes')
+          .doc(id)
+          .set(obj.toJson());
+      return id;
     } catch (ex) {
       return ex.toString();
     }
   }
 
-  Future<String> savePublicRoute(PublicRoute route) async {
+  Future<String> saveMapRoutes(obj) async {
     try {
-      final doc = await _collection.add(route.toJson());
+      final doc = await FirebaseFirestore.instance
+          .collection('map-routes')
+          .add(obj.toJson());
       return doc.id;
     } catch (ex) {
       return ex.toString();
