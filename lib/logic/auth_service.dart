@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_init_to_null, unused_local_variable
+
 import 'dart:async';
 
 import 'package:diplom/logic/database/firebase_service.dart';
@@ -6,25 +8,25 @@ import 'package:flutter/material.dart';
 import 'package:diplom/logic/database/users.dart' as users;
 
 class AuthenticationService extends ChangeNotifier {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  late User? user;
+  late User? user = FirebaseAuth.instance.currentUser;
   late StreamSubscription? userAuthSub;
+  Future<users.User> get my => user!.isAnonymous
+      ? Future(() => users.User(uid: 'anonymous'))
+      : DBService().getUser(uid);
 
   AuthenticationService() {
-    user = _auth.currentUser;
+    userAuthSub = FirebaseAuth.instance.userChanges().listen((newUser) {
+      if (newUser == null) {
+        return;
+      } else {
+        user = newUser;
+        notifyListeners();
+      }
+    }, onError: (e) {
+      // ignore: avoid_print
+      print('AuthProvider - FirebaseAuth - onAuthStateChanged - $e');
+    });
   }
-  //notifyListeners();
-  // userAuthSub = FirebaseAuth.instance.authStateChanges().listen((newUser) {
-  //   if (newUser == null) {
-  //     signUpAnon();
-  //   } else {
-  //     user = newUser;
-  //     notifyListeners();
-  //   }
-  // }, onError: (e) {
-  //   // ignore: avoid_print
-  //   print('AuthProvider - FirebaseAuth - onAuthStateChanged - $e');
-  // });
 
   @override
   void dispose() {
@@ -36,12 +38,11 @@ class AuthenticationService extends ChangeNotifier {
   }
 
   bool get isAuthenticated {
-    // ignore: unnecessary_null_comparison
     return user != null;
   }
 
   String get uid {
-    return user?.uid ?? '';
+    return user?.uid ?? 'unknown';
   }
 
   bool get isAnonymous {
@@ -52,15 +53,14 @@ class AuthenticationService extends ChangeNotifier {
     return user?.emailVerified ?? false;
   }
 
-  Future<String> signIn(
-      {String? email, String? password, String? nickname}) async {
+  Future<String> signIn({String? email, String? password}) async {
     try {
+      if (isAnonymous) await FirebaseAuth.instance.currentUser!.delete();
       final uc = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email ?? '', password: password ?? '');
-      users.User u = users.User(uid: uc.user!.uid, name: nickname ?? 'user');
-      await DBService().setUser(u);
-      return 'Добро пожаловать, ${uc.additionalUserInfo?.profile?['nickname']}';
+      return 'Добро пожаловать, ';
     } on FirebaseAuthException catch (e) {
+      signUpAnon();
       switch (e.code) {
         case 'user-not-found':
           return 'Пользователь не найден';
@@ -74,19 +74,25 @@ class AuthenticationService extends ChangeNotifier {
     }
   }
 
-  Future<String> signUp({String? email, String? password}) async {
+  Future<String> signUp(
+      {String? email, String? password, String? nickname}) async {
     try {
-      if (FirebaseAuth.instance.currentUser == null) {
+      if (FirebaseAuth.instance.currentUser != null) {
         if (FirebaseAuth.instance.currentUser!.isAnonymous) {
           final credential = EmailAuthProvider.credential(
               email: email ?? '', password: password ?? '');
           //await FirebaseAuth.instance.currentUser!.delete();
-          await FirebaseAuth.instance.currentUser
+          final uc = await FirebaseAuth.instance.currentUser
               ?.linkWithCredential(credential);
+          users.User u =
+              users.User(uid: uc?.user?.uid ?? '', name: nickname ?? 'user');
+          await DBService().setUser(u);
         }
       } else {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        final uc = await FirebaseAuth.instance.createUserWithEmailAndPassword(
             email: email ?? '', password: password ?? '');
+        users.User u = users.User(uid: uc.user!.uid, name: nickname ?? 'user');
+        await DBService().setUser(u);
       }
       return 'Не забудь подтвердить почту: $email';
     } on FirebaseAuthException catch (e) {
@@ -109,30 +115,29 @@ class AuthenticationService extends ChangeNotifier {
     }
   }
 
-  Future<void> updateInfo({String? nickname, String? photo}) async {
-    if (nickname != null) {
-      await FirebaseAuth.instance.currentUser!.updateDisplayName(nickname);
-    }
-    if (photo != null) {
-      await FirebaseAuth.instance.currentUser!.updatePhotoURL(photo);
-    }
-  }
-
   Future<String?> signUpAnon() async {
     try {
-      final uc = await FirebaseAuth.instance.signInAnonymously();
-      users.User u = users.User(uid: uc.user!.uid);
-      await DBService().setUser(u);
+      await FirebaseAuth.instance.signInAnonymously();
       return null;
     } catch (e) {
       return e.toString();
     }
   }
 
+  Future<void> resetPass({String? email = null}) async {
+    try {
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: email ?? user!.email ?? '');
+      await user?.reload();
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
   Future<void> verificate() async {
     if (!FirebaseAuth.instance.currentUser!.emailVerified) {
       await FirebaseAuth.instance.currentUser!.sendEmailVerification();
-      FirebaseAuth.instance.currentUser!.reload();
+      await user!.reload();
     }
   }
 

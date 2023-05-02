@@ -1,3 +1,4 @@
+import 'package:diplom/logic/providers.dart';
 import 'package:diplom/pages/map_page/map_page.dart';
 import 'package:diplom/pages/profile_page/profile_page.dart';
 import 'package:diplom/pages/routes_page/routes_page.dart';
@@ -13,7 +14,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  final PageController _pageController = PageController();
   int _currentPage = 0;
 
   @override
@@ -37,7 +37,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           : null,
       body: PageView(
         physics: const NeverScrollableScrollPhysics(),
-        controller: _pageController,
+        controller:
+            Provider.of<MapModel>(context, listen: false).pageController,
         children: const [
           MapPage(),
           RoutesPage(),
@@ -51,7 +52,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       bottomNavigationBar: NavigationBar(
           onDestinationSelected: (int index) {
-            _pageController.jumpToPage(index);
+            Provider.of<MapModel>(context, listen: false)
+                .pageController
+                .animateToPage(index,
+                    duration: const Duration(milliseconds: 100),
+                    curve: Curves.bounceIn);
           },
           selectedIndex: _currentPage,
           animationDuration: const Duration(milliseconds: 500),

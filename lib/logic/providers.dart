@@ -9,6 +9,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class MapModel extends ChangeNotifier {
   final List<Polyline> _polylines = [];
+  final List<Polyline> _viewPolylines = [];
   final List<Map<String, dynamic>> _points = [
     {'ctrl': TextEditingController(), 'point': null},
     {'ctrl': TextEditingController(), 'point': null}
@@ -16,6 +17,7 @@ class MapModel extends ChangeNotifier {
   final MapController mapController = MapController();
   final PanelController panelController = PanelController();
   ScrollController scrollController = ScrollController();
+  PageController pageController = PageController();
   final Map<String, dynamic> _states = {
     'editPoint': null,
   };
@@ -23,6 +25,8 @@ class MapModel extends ChangeNotifier {
 
   UnmodifiableListView<Polyline> get polylines =>
       UnmodifiableListView(_polylines);
+  UnmodifiableListView<Polyline> get viewPolylines =>
+      UnmodifiableListView(_viewPolylines);
   UnmodifiableListView<Map<String, dynamic>> get points =>
       UnmodifiableListView(_points);
   UnmodifiableMapView<String, dynamic> get tabs => UnmodifiableMapView(_tabs);
@@ -40,10 +44,10 @@ class MapModel extends ChangeNotifier {
           builder: (context) => const Icon(
             Icons.radio_button_checked,
             semanticLabel: 'err',
-            color: Colors.blueAccent,
+            color: Color.fromARGB(255, 255, 100, 0),
             size: 24,
             shadows: [
-              Shadow(blurRadius: 5, color: Colors.black26),
+              Shadow(blurRadius: 7, color: Colors.black45),
             ],
           ),
         ),
@@ -58,19 +62,28 @@ class MapModel extends ChangeNotifier {
           latitude: e['point'].latitude, longitude: e['point'].longitude))
       .toList();
 
-  void setEditPoint(int value) {
+  void setEditPoint(int? value) {
     _states['editPoint'] = value;
     notifyListeners();
   }
 
-  void addPolyline(Polyline value) {
-    _polylines.add(value);
+  void addAllViewPolylines(List<Polyline> value) {
+    _viewPolylines.clear();
+    _viewPolylines.addAll(value);
     notifyListeners();
   }
 
   void addAllPolylines(List<Polyline> value) {
     _polylines.clear();
     _polylines.addAll(value);
+    notifyListeners();
+  }
+
+  void addPolyline(Polyline p1, Polyline p2) {
+    _polylines.clear();
+    _viewPolylines.clear();
+    _polylines.add(p1);
+    _viewPolylines.add(p2);
     notifyListeners();
   }
 
@@ -92,14 +105,27 @@ class MapModel extends ChangeNotifier {
   }
 
   void addTab(String name, Widget view) {
-    final idx = _tabs['tab'].indexWhere((el) => el.data == name);
+    final idx = _tabs['tab'].indexWhere((el) => el.text == name);
     if (idx != -1) {
       _tabs['tab-view'].removeAt(idx);
       _tabs['tab-view'].insert(idx, view);
     } else {
-      _tabs['tab'].add(Text(name));
+      _tabs['tab'].add(Tab(
+        text: name,
+        height: 50,
+      ));
       _tabs['tab-view'].add(view);
     }
+    notifyListeners();
+  }
+
+  void addOneTab(String name, Widget view) {
+    clearTabs();
+    _tabs['tab'].add(Tab(
+      text: name,
+      height: 50,
+    ));
+    _tabs['tab-view'].add(view);
     notifyListeners();
   }
 
@@ -113,6 +139,7 @@ class MapModel extends ChangeNotifier {
     ]);
     _states['editPoint'] = null;
     _polylines.clear();
+    _viewPolylines.clear();
     notifyListeners();
   }
 }

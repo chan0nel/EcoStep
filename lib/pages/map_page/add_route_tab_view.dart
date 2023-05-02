@@ -1,4 +1,4 @@
-// ignore_for_file: non_constant_identifier_names, must_be_immutable
+// ignore_for_file: non_constant_identifier_names, must_be_immutable, use_build_context_synchronously
 
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/logic/map_service.dart';
@@ -68,6 +68,10 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
     return row;
   }
 
+  void onTapTab(index) {
+    if (index > 0) {}
+  }
+
   Widget _choiceRowChips(List<String> list, IconData? icon) {
     if (icon != null) list.insert(0, '');
     return Wrap(
@@ -76,7 +80,7 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
       children: List.generate(
         list.length,
         (index) => icon != null && index == 0
-            ? Icon(icon, size: 25)
+            ? Icon(icon, size: 20)
             : ChoiceChip(
                 label: Text(list[index]),
                 selected: icon != null
@@ -167,16 +171,24 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
           const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () async {
+              value.setEditPoint(null);
               lis = await MapService().getRoute(
                   profile: option['profile'] ?? 0,
                   points: value.pointList,
                   preference: option['preference'] ?? 0,
-                  alt: true);
-              value.addAllPolylines(lis.map((e) => e.polyline).toList());
-              for (var i = 0; i < lis.length; i++) {
-                lis[i].name = 'Маршрут ${i + 1}';
-                value.addTab(lis[i].name, RouteTab(mp: lis[i]));
-                widget.upd();
+                  alt: option['alt'] == 1);
+              if (lis.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Ошибка. Попробуйте еще раз.')));
+              } else {
+                value.addAllPolylines(lis.map((e) => e.polyline).toList());
+                value.addAllViewPolylines(
+                    lis.map((e) => e.accentPolyline).toList());
+                for (var i = 0; i < lis.length; i++) {
+                  lis[i].name = 'Маршрут ${i + 1}';
+                  value.addTab(lis[i].name, RouteTab(mp: lis[i]));
+                  widget.upd();
+                }
               }
             },
             child: const Text('Составить маршрут'),

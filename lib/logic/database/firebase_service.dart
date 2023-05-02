@@ -77,4 +77,12 @@ class DBService {
       return ex.toString();
     }
   }
+
+  Future<void> delete(ref) async {
+    try {
+      await FirebaseFirestore.instance.doc(ref).delete();
+    } catch (ex) {
+      print(ex);
+    }
+  }
 }

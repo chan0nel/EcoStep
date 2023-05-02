@@ -1,12 +1,26 @@
+import 'dart:async';
+
+import 'package:diplom/logic/auth_service.dart';
+import 'package:diplom/logic/database/firebase_service.dart';
+import 'package:diplom/logic/providers.dart';
+import 'package:diplom/pages/map_page/route_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
+import 'package:provider/provider.dart';
 
 class RoutesList extends StatefulWidget {
   final Map<String, List<dynamic>> list;
-  final bool minimal;
+  //final bool minimal;
   final bool save;
+  final int delete;
+  final Function update;
   const RoutesList(
-      {super.key, required this.list, this.minimal = true, this.save = false});
+      {super.key,
+      required this.list,
+      //this.minimal = true,
+      this.save = false,
+      this.delete = 0,
+      required this.update});
 
   @override
   State<RoutesList> createState() => _RoutesListState();
@@ -16,7 +30,7 @@ class _RoutesListState extends State<RoutesList> {
   @override
   Widget build(BuildContext context) {
     int length = widget.list['public']!.length;
-    if (length > 5 && widget.minimal) length = 5;
+    //if (length > 5 && widget.minimal) length = 5;
     return length != 0
         ? SliverList(
             delegate: SliverChildBuilderDelegate(
@@ -74,6 +88,7 @@ class _RoutesListState extends State<RoutesList> {
                                       'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM',
                                 ),
                                 PolylineLayer(
+                                  saveLayers: true,
                                   polylines: [
                                     widget.list['map']![index].polyline
                                   ],
@@ -83,17 +98,92 @@ class _RoutesListState extends State<RoutesList> {
                           ),
                           Column(
                             children: [
-                              Text('Протяженность: '
-                                  '${widget.list['map']![index].distanceCast}'),
-                              Text('Длительность: '
-                                  '${widget.list['map']![index].timeCast}'),
-                              Text('Подъем: '
-                                  '${widget.list['map']![index].ascent.toString()}'),
-                              Text('Спуск: '
-                                  '${widget.list['map']![index].descent.toString()}'),
+                              Text(
+                                'Протяженность: '
+                                '${widget.list['map']![index].distanceCast}',
+                                maxLines: 2,
+                              ),
+                              Text(
+                                'Длительность: '
+                                '${widget.list['map']![index].timeCast}',
+                                maxLines: 2,
+                              ),
+                              Text(
+                                'Подъем: '
+                                '${widget.list['map']![index].ascent.toString()}',
+                                maxLines: 2,
+                              ),
+                              Text(
+                                'Спуск: '
+                                '${widget.list['map']![index].descent.toString()}',
+                                maxLines: 2,
+                              ),
+                              Consumer<MapModel>(
+                                builder: (context, value, child) {
+                                  return ElevatedButton(
+                                      onPressed: () async {
+                                        if (value.panelController.isPanelOpen) {
+                                          await value.panelController.close();
+                                        }
+                                        value.addOneTab(
+                                            widget.list['map']![index].name,
+                                            RouteTab(
+                                              mp: widget.list['map']![index],
+                                              pr: widget.list['public']![index],
+                                            ));
+                                        value.addPolyline(
+                                            widget.list['map']![index].polyline,
+                                            widget.list['map']![index]
+                                                .accentPolyline);
+                                        value.mapController.move(
+                                            widget.list['map']![index].bbox
+                                                .center,
+                                            13);
+                                        await value.panelController.open();
+                                        await value.panelController
+                                            .animatePanelToSnapPoint(
+                                                duration: const Duration(
+                                                    milliseconds: 100));
+                                        await value.pageController
+                                            .animateToPage(0,
+                                                duration: const Duration(
+                                                    milliseconds: 100),
+                                                curve: Curves.bounceIn);
+                                      },
+                                      child: const Text('Узнать больше'));
+                                },
+                              ),
+                              widget.delete != 0
+                                  ? ElevatedButton(
+                                      onPressed: () async {
+                                        if (widget.delete == 1) {
+                                          await DBService().delete(
+                                              'map-routes/${widget.list['map']![index].id}');
+                                          await DBService().delete(
+                                              'public-routes/${widget.list['public']![index].routeid}');
+                                          widget.update();
+                                        }
+                                        if (widget.delete == 2) {
+                                          final user =
+                                              await AuthenticationService().my;
+                                          user.saves.remove(
+                                              widget.list['map']![index].id);
+                                          await DBService().setUser(user);
+                                          widget.update();
+                                        }
+                                      },
+                                      child: const Text('Удалить'))
+                                  : const SizedBox.shrink(),
                               widget.save
                                   ? ElevatedButton(
-                                      onPressed: () {},
+                                      onPressed: () async {
+                                        final user =
+                                            await AuthenticationService().my;
+                                        user.saves
+                                            .add(widget.list['map']![index].id);
+                                        await DBService().setUser(user);
+                                        widget.update();
+                                      },
                                       child: const Text('Сохранить'))
                                   : const SizedBox.shrink()
                             ],

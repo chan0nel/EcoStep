@@ -30,7 +30,25 @@ class MapRoute {
       ? '${distance.toStringAsFixed(0)} м'
       : '${(distance / 1000).toStringAsFixed(1)} км';
 
-  String get timeCast => Duration(seconds: (duration).round()).toString();
+  String get timeCast {
+    final temp = Duration(seconds: (duration).round());
+    String hour = temp.inHours == 0 ? '' : '${temp.inHours} ч ';
+    String min = temp.inMinutes == 0
+        ? ''
+        : '${(temp.inMinutes / (temp.inHours != 0 ? (60 * temp.inHours) : 1)).toStringAsFixed(0)} мин ';
+    String sec = temp.inSeconds == 0
+        ? ''
+        : '${(temp.inSeconds / (temp.inMinutes != 0 ? (60 * temp.inMinutes) : 1)).toStringAsFixed(0)} с';
+    return '$hour$min$sec';
+  }
+
+  Polyline get accentPolyline => Polyline(
+        points: polyline.points,
+        strokeWidth: 5,
+        color: const Color.fromARGB(255, 255, 136, 0),
+        borderStrokeWidth: 5,
+        borderColor: Colors.black26,
+      );
 
   MapRoute();
 
@@ -50,8 +68,8 @@ class MapRoute {
     polyline = Polyline(
       points: points,
       strokeWidth: 5,
-      color: Color(Random().nextInt(0xffffffff)).withAlpha(0xff),
-      borderStrokeWidth: 1,
+      color: const Color.fromARGB(255, 255, 251, 0),
+      borderStrokeWidth: 3,
       borderColor: Colors.black45,
     );
   }

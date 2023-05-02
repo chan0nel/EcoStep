@@ -52,7 +52,7 @@ class SliverHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(text),
-              TextButton(onPressed: () {}, child: const Text('Показать все'))
+              // TextButton(onPressed: () {}, child: const Text('Показать все'))
             ],
           ),
         ),

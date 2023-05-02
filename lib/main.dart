@@ -10,6 +10,7 @@ import 'package:diplom/pages/home_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  // AuthenticationService().signOut();
   if (!AuthenticationService().isAuthenticated) {
     await AuthenticationService().signUpAnon();
   }
@@ -26,6 +27,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => MapModel(),
         ),
+        ChangeNotifierProvider(
+          create: (context) => AuthenticationService(),
+        ),
         StreamProvider(
           create: (context) => InternetConnectionChecker().onStatusChange,
           initialData: InternetConnectionStatus.connected,
@@ -35,7 +39,13 @@ class MyApp extends StatelessWidget {
         title: 'EcoStep',
         debugShowCheckedModeBanner: false,
         theme: ThemeData.light(useMaterial3: true),
-        darkTheme: ThemeData.dark(useMaterial3: true),
+        // theme: ThemeData.from(
+        //     colorScheme: const ColorScheme.dark(), useMaterial3: true),
+        //locale: Locale('ru'),
+        // theme: ThemeData.from(
+        //     colorScheme: const ColorScheme.light(
+        //         primary: Color(0xffffcf00), secondary: Color(0x0fffbc40)),
+        //     useMaterial3: true),
         home: const HomePage(),
       ),
     );

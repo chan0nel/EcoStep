@@ -17,6 +17,7 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage>
     with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
   late TabController _tabController;
+  Polyline viewPolyline = Polyline(points: []);
   Map<String, dynamic> _tabs = {'tab': [], 'tab-view': []};
 
   @override
@@ -61,8 +62,7 @@ class _MapPageState extends State<MapPage>
                       'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM',
                 ),
                 PolylineLayer(
-                  polylines: value.polylines,
-                  polylineCulling: false,
+                  polylines: [...value.polylines, viewPolyline],
                 ),
                 MarkerLayer(
                   markers: value.markers,
@@ -74,6 +74,7 @@ class _MapPageState extends State<MapPage>
             builder: (context, value, child) => SlidingUpPanel(
               onPanelOpened: () async {
                 await value.panelController.animatePanelToPosition(1);
+                _updateTabs();
               },
               onPanelSlide: (position) {
                 if (position == 0 && value.panelController.isPanelAnimating) {
@@ -81,6 +82,9 @@ class _MapPageState extends State<MapPage>
                 }
               },
               onPanelClosed: () {
+                setState(() {
+                  viewPolyline = Polyline(points: []);
+                });
                 value.clearTabs();
                 _updateTabs();
               },
@@ -105,6 +109,18 @@ class _MapPageState extends State<MapPage>
                       ),
                     ),
                     TabBar(
+                      //overlayColor: ,
+                      onTap: (idx) {
+                        if (idx > 0) {
+                          setState(() {
+                            viewPolyline = value.viewPolylines[idx - 1];
+                          });
+                        } else {
+                          setState(() {
+                            viewPolyline = Polyline(points: []);
+                          });
+                        }
+                      },
                       controller: _tabController,
                       tabs: _tabs['tab'].cast<Widget>(),
                     ),

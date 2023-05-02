@@ -8,6 +8,7 @@ import 'package:diplom/logic/database/users.dart';
 import 'package:diplom/pages/routes_page/routes_list.dart';
 import 'package:diplom/pages/routes_page/sliver_header.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class RoutesPage extends StatefulWidget {
   const RoutesPage({super.key});
@@ -58,23 +59,33 @@ class _RoutesPageState extends State<RoutesPage>
       'default': {},
       'other': {}
     };
-    final uid = AuthenticationService().uid;
-    final my = u.firstWhere((element) => element.uid == uid);
-    map['yours']['public'] = pr.where((element) => element.uid == uid).toList();
-    map['yours']['map'] = mr
-        .where((element) =>
-            map['yours']['public'].any((el) => el.routeid == element.id))
-        .toList();
-    map['saves']['public'] =
-        pr.where((element) => my.saves.contains(element.routeid)).toList();
-    map['saves']['map'] = mr
-        .where((element) =>
-            map['saves']['public'].any((el) => el.routeid == element.id))
-        .toList();
-    map['saves']['user'] = u
-        .where((element) =>
-            map['saves']['public'].any((el) => el.uid == element.uid))
-        .toList();
+    final auth = Provider.of<AuthenticationService>(context, listen: false);
+    if (!auth.isAnonymous || auth.isVerified) {
+      final uid = auth.uid;
+      final my = u.firstWhere((element) => element.uid == uid);
+      map['yours']['public'] =
+          pr.where((element) => element.uid == uid).toList();
+      map['yours']['map'] = mr
+          .where((element) =>
+              map['yours']['public'].any((el) => el.routeid == element.id))
+          .toList();
+      map['saves']['public'] =
+          pr.where((element) => my.saves.contains(element.routeid)).toList();
+      map['saves']['map'] = mr
+          .where((element) =>
+              map['saves']['public'].any((el) => el.routeid == element.id))
+          .toList();
+      map['saves']['user'] = map['saves']['public'].map((element) {
+        final t = u.firstWhere(
+          (el) => el.uid == element.uid,
+          orElse: () => User(),
+        );
+        if (t.uid != '') {
+          return t;
+        }
+      }).toList();
+    }
+
     map['default']['public'] =
         pr.where((element) => element.uid == 'default').toList();
     map['default']['map'] = mr
@@ -91,10 +102,15 @@ class _RoutesPageState extends State<RoutesPage>
         .where((element) =>
             map['other']['public'].any((el) => el.routeid == element.id))
         .toList();
-    map['other']['user'] = u
-        .where((element) =>
-            map['other']['public'].any((el) => el.uid == element.uid))
-        .toList();
+    map['other']['user'] = map['other']['public'].map((element) {
+      final t = u.firstWhere(
+        (el) => el.uid == element.uid,
+        orElse: () => User(),
+      );
+      if (t.uid != '') {
+        return t;
+      }
+    }).toList();
     return map;
   }
 
@@ -126,20 +142,39 @@ class _RoutesPageState extends State<RoutesPage>
                 onRefresh: refresh,
                 child: CustomScrollView(
                   slivers: [
-                    const SliverHeader(text: 'Ваши маршруты'),
-                    RoutesList(
-                        list: map['yours'].cast<String, List<dynamic>>() ?? []),
-                    const SliverHeader(text: 'Сохранненные маршруты'),
-                    RoutesList(
-                        list: map['saves'].cast<String, List<dynamic>>() ?? []),
+                    map['yours']['public'] != null
+                        ? const SliverHeader(text: 'Ваши маршруты')
+                        : const SliverToBoxAdapter(),
+                    map['yours']['public'] != null
+                        ? RoutesList(
+                            list: map['yours'].cast<String, List<dynamic>>() ??
+                                [],
+                            update: refresh,
+                            delete: 1,
+                          )
+                        : const SliverToBoxAdapter(),
+                    map['saves']['public'] != null
+                        ? const SliverHeader(text: 'Сохранненные маршруты')
+                        : const SliverToBoxAdapter(),
+                    map['saves']['public'] != null
+                        ? RoutesList(
+                            list: map['saves'].cast<String, List<dynamic>>() ??
+                                [],
+                            update: refresh,
+                            delete: 2,
+                          )
+                        : const SliverToBoxAdapter(),
                     const SliverHeader(text: 'Наши маршруты'),
                     RoutesList(
-                        list:
-                            map['default'].cast<String, List<dynamic>>() ?? []),
+                      list: map['default'].cast<String, List<dynamic>>() ?? [],
+                      update: refresh,
+                    ),
                     const SliverHeader(text: 'Пользовательские маршруты'),
                     RoutesList(
-                        list: map['other'].cast<String, List<dynamic>>() ?? [],
-                        save: true),
+                      list: map['other'].cast<String, List<dynamic>>() ?? [],
+                      save: map['yours']['public'] != null,
+                      update: refresh,
+                    ),
                   ],
                 ),
               );
