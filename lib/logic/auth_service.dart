@@ -14,8 +14,11 @@ class AuthenticationService extends ChangeNotifier {
       ? Future(() => users.User(uid: 'anonymous'))
       : DBService().getUser(uid);
 
+  Stream<User?> get stream => FirebaseAuth.instance.userChanges();
+
   AuthenticationService() {
-    userAuthSub = FirebaseAuth.instance.userChanges().listen((newUser) {
+    FirebaseAuth.instance.userChanges().listen((newUser) {
+      //userAuthSub = FirebaseAuth.instance.userChanges().listen((newUser) {
       if (newUser == null) {
         return;
       } else {
@@ -81,7 +84,6 @@ class AuthenticationService extends ChangeNotifier {
         if (FirebaseAuth.instance.currentUser!.isAnonymous) {
           final credential = EmailAuthProvider.credential(
               email: email ?? '', password: password ?? '');
-          //await FirebaseAuth.instance.currentUser!.delete();
           final uc = await FirebaseAuth.instance.currentUser
               ?.linkWithCredential(credential);
           users.User u =

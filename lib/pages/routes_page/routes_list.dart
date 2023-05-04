@@ -77,6 +77,7 @@ class _RoutesListState extends State<RoutesList> {
                             width: 165,
                             child: FlutterMap(
                               options: MapOptions(
+                                  keepAlive: true,
                                   interactiveFlags: InteractiveFlag.none,
                                   bounds: widget.list['map']![index].bbox,
                                   boundsOptions: const FitBoundsOptions(
@@ -125,12 +126,11 @@ class _RoutesListState extends State<RoutesList> {
                                         if (value.panelController.isPanelOpen) {
                                           await value.panelController.close();
                                         }
-                                        value.addOneTab(
-                                            widget.list['map']![index].name,
-                                            RouteTab(
-                                              mp: widget.list['map']![index],
-                                              pr: widget.list['public']![index],
-                                            ));
+                                        value.changeRoute({
+                                          'public':
+                                              widget.list['public']![index],
+                                          'map': widget.list['map']![index],
+                                        });
                                         value.addPolyline(
                                             widget.list['map']![index].polyline,
                                             widget.list['map']![index]

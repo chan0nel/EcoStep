@@ -1,5 +1,7 @@
-import 'package:diplom/pages/map_page/floating_buttons.dart';
+import 'package:diplom/logic/map_service.dart';
+import 'package:diplom/pages/map_page/add_route_tab_view.dart';
 import 'package:diplom/logic/providers.dart';
+import 'package:diplom/pages/routes_page/see_more.dart';
 import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -15,10 +17,12 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage>
-    with AutomaticKeepAliveClientMixin, TickerProviderStateMixin {
+    with AutomaticKeepAliveClientMixin<MapPage>, TickerProviderStateMixin {
   late TabController _tabController;
+  final PanelController _panelController = PanelController();
   Polyline viewPolyline = Polyline(points: []);
   Map<String, dynamic> _tabs = {'tab': [], 'tab-view': []};
+  bool change = false;
 
   @override
   void initState() {
@@ -40,13 +44,47 @@ class _MapPageState extends State<MapPage>
     super.build(context);
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: FloatingButtons(upd: _updateTabs),
+      floatingActionButton: Consumer<MapModel>(
+        builder: (context, value, child) {
+          return _panelController.isPanelClosed &&
+                  value.panelController.isPanelClosed
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Flexible(
+                      child: FloatingActionButton(
+                        onPressed: () async {
+                          final pos = await MapService().determinePosition();
+                          value.mapController
+                              .move(LatLng(pos.latitude, pos.longitude), 15);
+                        },
+                        heroTag: null,
+                        child: const Icon(Icons.my_location),
+                      ),
+                    ),
+                    const SizedBox(height: 10.0),
+                    FloatingActionButton(
+                      onPressed: () async {
+                        value.addTab('Составить маршрут',
+                            AddRouteTabView(upd: _updateTabs));
+                        _updateTabs();
+                        await _panelController.open();
+                      },
+                      heroTag: null,
+                      child: const Icon(Icons.add),
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink();
+        },
+      ),
       body: Stack(
         children: [
           Consumer<MapModel>(
             builder: (context, value, child) => FlutterMap(
               mapController: value.mapController,
               options: MapOptions(
+                keepAlive: true,
                 center: LatLng(53.893009, 27.567444),
                 onTap: (tapPosition, point) {
                   final idx = value.states['editPoint'];
@@ -62,6 +100,7 @@ class _MapPageState extends State<MapPage>
                       'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM',
                 ),
                 PolylineLayer(
+                  saveLayers: true,
                   polylines: [...value.polylines, viewPolyline],
                 ),
                 MarkerLayer(
@@ -73,12 +112,12 @@ class _MapPageState extends State<MapPage>
           Consumer<MapModel>(
             builder: (context, value, child) => SlidingUpPanel(
               onPanelOpened: () async {
-                await value.panelController.animatePanelToPosition(1);
+                await _panelController.animatePanelToPosition(1);
                 _updateTabs();
               },
               onPanelSlide: (position) {
-                if (position == 0 && value.panelController.isPanelAnimating) {
-                  value.panelController.close();
+                if (position == 0 && _panelController.isPanelAnimating) {
+                  _panelController.close();
                 }
               },
               onPanelClosed: () {
@@ -89,7 +128,7 @@ class _MapPageState extends State<MapPage>
                 _updateTabs();
               },
               snapPoint: 0.3,
-              controller: value.panelController,
+              controller: _panelController,
               minHeight: 0,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(24.0),
@@ -109,7 +148,6 @@ class _MapPageState extends State<MapPage>
                       ),
                     ),
                     TabBar(
-                      //overlayColor: ,
                       onTap: (idx) {
                         if (idx > 0) {
                           setState(() {
@@ -130,14 +168,53 @@ class _MapPageState extends State<MapPage>
                         controller: _tabController,
                         children: _tabs['tab-view'].cast<Widget>(),
                         link: true,
-                        cacheExtent: 4,
+                        shouldIgnorePointerWhenScrolling: false,
                       ),
-                    ),
+                    )
                   ],
                 );
               },
             ),
-          )
+          ),
+          Consumer<MapModel>(
+            builder: (context, value, child) => SlidingUpPanel(
+                onPanelOpened: () async {
+                  await value.panelController.animatePanelToPosition(1);
+                },
+                onPanelSlide: (position) {
+                  if (position == 0 && value.panelController.isPanelAnimating) {
+                    value.panelController.close();
+                  }
+                  if (position == 1.0 &&
+                      !value.panelController.isPanelAnimating) {
+                    setState(() {
+                      change = true;
+                    });
+                  } else {
+                    setState(() {
+                      change = false;
+                    });
+                  }
+                },
+                onPanelClosed: () {
+                  setState(() {
+                    viewPolyline = Polyline(points: []);
+                    change = false;
+                  });
+                  value.clearPolyline();
+                },
+                maxHeight: MediaQuery.of(context).size.height,
+                snapPoint: 0.4,
+                controller: value.panelController,
+                minHeight: 0,
+                borderRadius: !change
+                    ? const BorderRadius.only(
+                        topLeft: Radius.circular(24.0),
+                        topRight: Radius.circular(24.0),
+                      )
+                    : null,
+                panelBuilder: (sc) => SeeMorePanel(scrollController: sc)),
+          ),
         ],
       ),
     );

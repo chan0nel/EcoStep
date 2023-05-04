@@ -18,14 +18,22 @@ class RoutesPage extends StatefulWidget {
 }
 
 class _RoutesPageState extends State<RoutesPage>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin<RoutesPage> {
   final DBService _service = DBService();
   late Future<List<dynamic>> _pr, _mr, _u;
+  AuthenticationService auth = AuthenticationService();
+  bool keep = true;
 
   @override
   void initState() {
     super.initState();
-
+    Provider.of<AuthenticationService>(context, listen: false)
+        .stream
+        .listen((event) {
+      //keep = event != null;
+      print('change');
+      refresh();
+    });
     _pr = loadPublicRoutes();
     _mr = loadMapRoutes();
     _u = loadUsers();
@@ -118,71 +126,69 @@ class _RoutesPageState extends State<RoutesPage>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-        appBar: AppBar(),
+        //appBar: buildAppBar(context),
         body: FutureBuilder(
-          future: Future.wait([
-            loadPublicRoutes(),
-            loadMapRoutes(),
-            loadUsers(),
-          ]),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            } else {
-              final data = snapshot.data ?? [];
-              Map<String, dynamic> map = updateCategories(
-                  data[0].cast<PublicRoute>(),
-                  data[1].cast<MapRoute>(),
-                  data[2].cast<User>());
-              return RefreshIndicator(
-                onRefresh: refresh,
-                child: CustomScrollView(
-                  slivers: [
-                    map['yours']['public'] != null
-                        ? const SliverHeader(text: 'Ваши маршруты')
-                        : const SliverToBoxAdapter(),
-                    map['yours']['public'] != null
-                        ? RoutesList(
-                            list: map['yours'].cast<String, List<dynamic>>() ??
-                                [],
-                            update: refresh,
-                            delete: 1,
-                          )
-                        : const SliverToBoxAdapter(),
-                    map['saves']['public'] != null
-                        ? const SliverHeader(text: 'Сохранненные маршруты')
-                        : const SliverToBoxAdapter(),
-                    map['saves']['public'] != null
-                        ? RoutesList(
-                            list: map['saves'].cast<String, List<dynamic>>() ??
-                                [],
-                            update: refresh,
-                            delete: 2,
-                          )
-                        : const SliverToBoxAdapter(),
-                    const SliverHeader(text: 'Наши маршруты'),
-                    RoutesList(
-                      list: map['default'].cast<String, List<dynamic>>() ?? [],
-                      update: refresh,
-                    ),
-                    const SliverHeader(text: 'Пользовательские маршруты'),
-                    RoutesList(
-                      list: map['other'].cast<String, List<dynamic>>() ?? [],
-                      save: map['yours']['public'] != null,
-                      update: refresh,
-                    ),
-                  ],
+      future: Future.wait([
+        loadPublicRoutes(),
+        loadMapRoutes(),
+        loadUsers(),
+      ]),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          final data = snapshot.data ?? [];
+          Map<String, dynamic> map = updateCategories(
+              data[0].cast<PublicRoute>(),
+              data[1].cast<MapRoute>(),
+              data[2].cast<User>());
+          return RefreshIndicator(
+            onRefresh: refresh,
+            child: CustomScrollView(
+              slivers: [
+                map['yours']['public'] != null
+                    ? const SliverHeader(text: 'Ваши маршруты')
+                    : const SliverToBoxAdapter(),
+                map['yours']['public'] != null
+                    ? RoutesList(
+                        list: map['yours'].cast<String, List<dynamic>>() ?? [],
+                        update: refresh,
+                        delete: 1,
+                      )
+                    : const SliverToBoxAdapter(),
+                map['saves']['public'] != null
+                    ? const SliverHeader(text: 'Сохранненные маршруты')
+                    : const SliverToBoxAdapter(),
+                map['saves']['public'] != null
+                    ? RoutesList(
+                        list: map['saves'].cast<String, List<dynamic>>() ?? [],
+                        update: refresh,
+                        delete: 2,
+                      )
+                    : const SliverToBoxAdapter(),
+                const SliverHeader(text: 'Наши маршруты'),
+                RoutesList(
+                  list: map['default'].cast<String, List<dynamic>>() ?? [],
+                  update: refresh,
                 ),
-              );
-            }
-          },
-        ));
+                const SliverHeader(text: 'Пользовательские маршруты'),
+                RoutesList(
+                  list: map['other'].cast<String, List<dynamic>>() ?? [],
+                  save: map['yours']['public'] != null,
+                  update: refresh,
+                ),
+              ],
+            ),
+          );
+        }
+      },
+    ));
   }
 
   @override
-  bool get wantKeepAlive => true;
+  bool get wantKeepAlive => keep;
 }

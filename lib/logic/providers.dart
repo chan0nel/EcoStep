@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:diplom/logic/map_service.dart';
+import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -22,6 +23,7 @@ class MapModel extends ChangeNotifier {
     'editPoint': null,
   };
   final Map<String, dynamic> _tabs = {'tab': [], 'tab-view': []};
+  final Map<String, dynamic> _route = {'public': null, 'map': null};
 
   UnmodifiableListView<Polyline> get polylines =>
       UnmodifiableListView(_polylines);
@@ -32,6 +34,8 @@ class MapModel extends ChangeNotifier {
   UnmodifiableMapView<String, dynamic> get tabs => UnmodifiableMapView(_tabs);
   UnmodifiableMapView<String, dynamic> get states =>
       UnmodifiableMapView(_states);
+
+  UnmodifiableMapView<String, dynamic> get route => UnmodifiableMapView(_route);
 
   List<Marker> get markers => _points
       .where((element) => element['point'] != null)
@@ -87,6 +91,12 @@ class MapModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void changeRoute(Map<String, dynamic> map) {
+    _route['public'] = map['public'];
+    _route['map'] = map['map'];
+    notifyListeners();
+  }
+
   void addCtrl() {
     _points.insert(
         _points.length - 1, {'ctrl': TextEditingController(), 'point': null});
@@ -116,6 +126,11 @@ class MapModel extends ChangeNotifier {
       ));
       _tabs['tab-view'].add(view);
     }
+    notifyListeners();
+  }
+
+  void clearPolyline() {
+    _polylines.clear();
     notifyListeners();
   }
 

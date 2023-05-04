@@ -39,12 +39,20 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
 
     keyboardSubscription =
         keyboardVisibilityController.onChange.listen((bool visible) {
-      Timer(const Duration(milliseconds: 50), () {
-        setState(() {
-          hide = visible;
+      if (mounted) {
+        Timer(const Duration(milliseconds: 50), () {
+          setState(() {
+            hide = visible;
+          });
         });
-      });
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    keyboardSubscription.cancel();
+    super.dispose();
   }
 
   @override
