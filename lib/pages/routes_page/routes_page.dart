@@ -22,7 +22,9 @@ class _RoutesPageState extends State<RoutesPage>
   final DBService _service = DBService();
   late Future<List<dynamic>> _pr, _mr, _u;
   AuthenticationService auth = AuthenticationService();
-  bool keep = true;
+  TextEditingController ctrl = TextEditingController();
+  bool search = false;
+  String? name = null;
 
   @override
   void initState() {
@@ -30,8 +32,6 @@ class _RoutesPageState extends State<RoutesPage>
     Provider.of<AuthenticationService>(context, listen: false)
         .stream
         .listen((event) {
-      //keep = event != null;
-      print('change');
       refresh();
     });
     _pr = loadPublicRoutes();
@@ -93,7 +93,6 @@ class _RoutesPageState extends State<RoutesPage>
         }
       }).toList();
     }
-
     map['default']['public'] =
         pr.where((element) => element.uid == 'default').toList();
     map['default']['map'] = mr
@@ -119,6 +118,49 @@ class _RoutesPageState extends State<RoutesPage>
         return t;
       }
     }).toList();
+    if (search && name != null) {
+      if (!auth.isAnonymous || auth.isVerified) {
+        for (var i = map['yours']['map'].length - 1; i >= 0; i--) {
+          if (name!
+              .toLowerCase()
+              .allMatches(map['yours']['map'][i].name.toLowerCase())
+              .isEmpty) {
+            map['yours']['map'].removeAt(i);
+            map['yours']['public'].removeAt(i);
+          }
+        }
+        for (var i = map['saves']['map'].length - 1; i >= 0; i--) {
+          if (name!
+              .toLowerCase()
+              .allMatches(map['saves']['map'][i].name.toLowerCase())
+              .isEmpty) {
+            map['saves']['map'].removeAt(i);
+            map['saves']['public'].removeAt(i);
+            map['saves']['user'].removeAt(i);
+          }
+        }
+      }
+
+      for (var i = map['default']['map'].length - 1; i >= 0; i--) {
+        if (name!
+            .toLowerCase()
+            .allMatches(map['default']['map'][i].name.toLowerCase())
+            .isEmpty) {
+          map['default']['map'].removeAt(i);
+          map['default']['public'].removeAt(i);
+        }
+      }
+      for (var i = map['other']['map'].length - 1; i >= 0; i--) {
+        if (name!
+            .toLowerCase()
+            .allMatches(map['other']['map'][i].name.toLowerCase())
+            .isEmpty) {
+          map['other']['map'].removeAt(i);
+          map['other']['public'].removeAt(i);
+          map['other']['user'].removeAt(i);
+        }
+      }
+    }
     return map;
   }
 
@@ -126,69 +168,134 @@ class _RoutesPageState extends State<RoutesPage>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-        //appBar: buildAppBar(context),
+        appBar: AppBar(
+          leading: search
+              ? IconButton(
+                  onPressed: () {
+                    ctrl.text = '';
+                    setState(() {
+                      search = false;
+                      name = null;
+                    });
+                  },
+                  icon: const Icon(Icons.arrow_back),
+                )
+              : null,
+          title: search
+              ? TextField(
+                  onSubmitted: (value) {
+                    setState(() {
+                      name = value;
+                    });
+                  },
+                  onChanged: (value) {
+                    if (value == '') {
+                      setState(() {
+                        name = null;
+                      });
+                    }
+                  },
+                  controller: ctrl,
+                  decoration: InputDecoration(
+                      hintText: 'Найти...',
+                      alignLabelWithHint: true,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          ctrl.text = '';
+                        },
+                        icon: const Icon(Icons.clear),
+                      )),
+                  textAlignVertical: TextAlignVertical.bottom,
+                )
+              : const Text('Маршруты'),
+          actions: !search
+              ? [
+                  IconButton(
+                      onPressed: () {
+                        setState(() {
+                          search = true;
+                        });
+                      },
+                      icon: const Icon(Icons.search))
+                ]
+              : null,
+        ),
         body: FutureBuilder(
-      future: Future.wait([
-        loadPublicRoutes(),
-        loadMapRoutes(),
-        loadUsers(),
-      ]),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else {
-          final data = snapshot.data ?? [];
-          Map<String, dynamic> map = updateCategories(
-              data[0].cast<PublicRoute>(),
-              data[1].cast<MapRoute>(),
-              data[2].cast<User>());
-          return RefreshIndicator(
-            onRefresh: refresh,
-            child: CustomScrollView(
-              slivers: [
-                map['yours']['public'] != null
-                    ? const SliverHeader(text: 'Ваши маршруты')
-                    : const SliverToBoxAdapter(),
-                map['yours']['public'] != null
-                    ? RoutesList(
-                        list: map['yours'].cast<String, List<dynamic>>() ?? [],
-                        update: refresh,
-                        delete: 1,
-                      )
-                    : const SliverToBoxAdapter(),
-                map['saves']['public'] != null
-                    ? const SliverHeader(text: 'Сохранненные маршруты')
-                    : const SliverToBoxAdapter(),
-                map['saves']['public'] != null
-                    ? RoutesList(
-                        list: map['saves'].cast<String, List<dynamic>>() ?? [],
-                        update: refresh,
-                        delete: 2,
-                      )
-                    : const SliverToBoxAdapter(),
-                const SliverHeader(text: 'Наши маршруты'),
-                RoutesList(
-                  list: map['default'].cast<String, List<dynamic>>() ?? [],
-                  update: refresh,
+          future: Future.wait([
+            loadPublicRoutes(),
+            loadMapRoutes(),
+            loadUsers(),
+          ]),
+          builder: (context, snapshot) {
+            //List<int> list = [];
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else {
+              final data = snapshot.data ?? [];
+              Map<String, dynamic> map = updateCategories(
+                  data[0].cast<PublicRoute>(),
+                  data[1].cast<MapRoute>(),
+                  data[2].cast<User>());
+              return RefreshIndicator(
+                onRefresh: refresh,
+                child: CustomScrollView(
+                  slivers: [
+                    // search
+                    //     ? SliverToBoxAdapter(
+                    //         child: Wrap(
+                    //           children: ['название', 'пользователь']
+                    //               .map((e) => ChoiceChip(
+                    //                   label: Text(e),
+                    //                   selected: list.contains(e)))
+                    //               .toList(),
+                    //         ),
+                    //       )
+                    //     : const SliverToBoxAdapter(),
+                    map['yours']['public'] != null
+                        ? const SliverHeader(text: 'Ваши маршруты')
+                        : const SliverToBoxAdapter(),
+                    map['yours']['public'] != null
+                        ? RoutesList(
+                            list: map['yours'].cast<String, List<dynamic>>() ??
+                                [],
+                            update: refresh,
+                            delete: 1,
+                          )
+                        : const SliverToBoxAdapter(),
+                    map['saves']['public'] != null
+                        ? const SliverHeader(text: 'Сохранненные маршруты')
+                        : const SliverToBoxAdapter(),
+                    map['saves']['public'] != null
+                        ? RoutesList(
+                            list: map['saves'].cast<String, List<dynamic>>() ??
+                                [],
+                            update: refresh,
+                            delete: 2,
+                          )
+                        : const SliverToBoxAdapter(),
+                    const SliverHeader(text: 'Наши маршруты'),
+                    RoutesList(
+                      list: map['default'].cast<String, List<dynamic>>() ?? [],
+                      update: refresh,
+                    ),
+                    const SliverHeader(text: 'Пользовательские маршруты'),
+                    RoutesList(
+                      list: map['other'].cast<String, List<dynamic>>() ?? [],
+                      save: map['yours']['public'] != null,
+                      update: refresh,
+                    ),
+                  ],
                 ),
-                const SliverHeader(text: 'Пользовательские маршруты'),
-                RoutesList(
-                  list: map['other'].cast<String, List<dynamic>>() ?? [],
-                  save: map['yours']['public'] != null,
-                  update: refresh,
-                ),
-              ],
-            ),
-          );
-        }
-      },
-    ));
+              );
+            }
+          },
+        ));
   }
 
   @override
-  bool get wantKeepAlive => keep;
+  bool get wantKeepAlive => true;
 }
