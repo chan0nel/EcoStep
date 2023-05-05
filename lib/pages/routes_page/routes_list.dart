@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/providers.dart';
+import 'package:diplom/logic/theme_provider.dart';
 import 'package:diplom/pages/map_page/route_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
@@ -75,26 +76,30 @@ class _RoutesListState extends State<RoutesList> {
                           SizedBox(
                             height: 165,
                             width: 165,
-                            child: FlutterMap(
-                              options: MapOptions(
-                                  keepAlive: true,
-                                  interactiveFlags: InteractiveFlag.none,
-                                  bounds: widget.list['map']![index].bbox,
-                                  boundsOptions: const FitBoundsOptions(
-                                      padding: EdgeInsets.all(30))),
-                              children: [
-                                TileLayer(
-                                  urlTemplate:
-                                      'https://tile.jawg.io/jawg-sunny/{z}/{x}/{y}.png?'
-                                      'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM',
-                                ),
-                                PolylineLayer(
-                                  saveLayers: true,
-                                  polylines: [
-                                    widget.list['map']![index].polyline
-                                  ],
-                                )
-                              ],
+                            child: Consumer<ThemeProvider>(
+                              builder: (context, value, child) => FlutterMap(
+                                options: MapOptions(
+                                    keepAlive: true,
+                                    interactiveFlags: InteractiveFlag.none,
+                                    bounds: widget.list['map']![index].bbox,
+                                    boundsOptions: const FitBoundsOptions(
+                                        padding: EdgeInsets.all(30))),
+                                children: [
+                                  TileLayer(
+                                    urlTemplate: value.curTheme
+                                        ? 'https://tile.jawg.io/jawg-sunny/{z}/{x}/{y}.png?'
+                                            'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM'
+                                        : 'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}.png?'
+                                            'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM',
+                                  ),
+                                  PolylineLayer(
+                                    saveLayers: true,
+                                    polylines: [
+                                      widget.list['map']![index].polyline
+                                    ],
+                                  )
+                                ],
+                              ),
                             ),
                           ),
                           Column(

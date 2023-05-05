@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import 'package:diplom/logic/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate({
@@ -42,11 +44,11 @@ class SliverHeader extends StatelessWidget {
         maxHeight: 60.0,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            border: const Border(
+          decoration: const BoxDecoration(
+            border: Border(
               bottom: BorderSide(width: 1, color: Colors.black12),
             ),
-            color: Colors.lightBlue[200],
+            color: Color.fromARGB(210, 255, 179, 0),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

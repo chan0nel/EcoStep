@@ -1,3 +1,4 @@
+import 'package:diplom/logic/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -33,21 +34,19 @@ class MyApp extends StatelessWidget {
         StreamProvider(
           create: (context) => InternetConnectionChecker().onStatusChange,
           initialData: InternetConnectionStatus.connected,
-        )
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ThemeProvider(),
+        ),
       ],
-      child: MaterialApp(
-        title: 'EcoStep',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData.light(useMaterial3: true),
-        // theme: ThemeData.from(
-        //     colorScheme: const ColorScheme.dark(), useMaterial3: true),
-        //locale: Locale('ru'),
-        // theme: ThemeData.from(
-        //     colorScheme: const ColorScheme.light(
-        //         primary: Color(0xffffcf00), secondary: Color(0x0fffbc40)),
-        //     useMaterial3: true),
-        home: const HomePage(),
-      ),
+      builder: (context, child) {
+        return MaterialApp(
+          title: 'EcoStep',
+          debugShowCheckedModeBanner: false,
+          theme: Provider.of<ThemeProvider>(context).theme,
+          home: const HomePage(),
+        );
+      },
     );
   }
 }

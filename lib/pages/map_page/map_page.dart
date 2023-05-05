@@ -1,4 +1,5 @@
 import 'package:diplom/logic/map_service.dart';
+import 'package:diplom/logic/theme_provider.dart';
 import 'package:diplom/pages/map_page/add_route_tab_view.dart';
 import 'package:diplom/logic/providers.dart';
 import 'package:diplom/pages/routes_page/see_more.dart';
@@ -80,8 +81,8 @@ class _MapPageState extends State<MapPage>
       ),
       body: Stack(
         children: [
-          Consumer<MapModel>(
-            builder: (context, value, child) => FlutterMap(
+          Consumer2<MapModel, ThemeProvider>(
+            builder: (context, value, value2, child) => FlutterMap(
               mapController: value.mapController,
               options: MapOptions(
                 keepAlive: true,
@@ -95,9 +96,11 @@ class _MapPageState extends State<MapPage>
               ),
               children: [
                 TileLayer(
-                  urlTemplate:
-                      'https://tile.jawg.io/jawg-sunny/{z}/{x}/{y}.png?'
-                      'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM',
+                  urlTemplate: value2.curTheme
+                      ? 'https://tile.jawg.io/jawg-sunny/{z}/{x}/{y}.png?'
+                          'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM'
+                      : 'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}.png?'
+                          'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM',
                 ),
                 PolylineLayer(
                   saveLayers: true,
@@ -109,8 +112,11 @@ class _MapPageState extends State<MapPage>
               ],
             ),
           ),
-          Consumer<MapModel>(
-            builder: (context, value, child) => SlidingUpPanel(
+          Consumer2<MapModel, ThemeProvider>(
+            builder: (context, value, value2, child) => SlidingUpPanel(
+              color: !value2.curTheme
+                  ? value2.theme.colorScheme.background
+                  : Colors.white,
               onPanelOpened: () async {
                 await _panelController.animatePanelToPosition(1);
                 _updateTabs();
@@ -144,7 +150,9 @@ class _MapPageState extends State<MapPage>
                       height: 5,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        color: Colors.black26,
+                        color: value2.curTheme
+                            ? value2.theme.colorScheme.background
+                            : Colors.white,
                       ),
                     ),
                     TabBar(
@@ -176,8 +184,11 @@ class _MapPageState extends State<MapPage>
               },
             ),
           ),
-          Consumer<MapModel>(
-            builder: (context, value, child) => SlidingUpPanel(
+          Consumer2<MapModel, ThemeProvider>(
+            builder: (context, value, value2, child) => SlidingUpPanel(
+                color: !value2.curTheme
+                    ? value2.theme.colorScheme.background
+                    : Colors.white,
                 onPanelOpened: () async {
                   await value.panelController.animatePanelToPosition(1);
                 },

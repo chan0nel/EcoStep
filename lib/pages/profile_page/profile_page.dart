@@ -8,6 +8,8 @@ import 'package:diplom/widgets/cust_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../logic/theme_provider.dart';
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -140,6 +142,15 @@ class _ProfilePageState extends State<ProfilePage>
                         );
                       },
                     ),
+                    Consumer<ThemeProvider>(
+                      builder: (context, value, child) {
+                        return ElevatedButton(
+                            onPressed: () {
+                              value.toggleTheme();
+                            },
+                            child: Text('change'));
+                      },
+                    )
                   ],
                 ),
               ));
