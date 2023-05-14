@@ -1,7 +1,8 @@
+// ignore_for_file: prefer_final_fields
+
 import 'dart:collection';
 
 import 'package:diplom/logic/map_service.dart';
-import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -15,6 +16,7 @@ class MapModel extends ChangeNotifier {
     {'ctrl': TextEditingController(), 'point': null},
     {'ctrl': TextEditingController(), 'point': null}
   ];
+  List<Map<String, dynamic>> _tempPoints = [];
   final MapController mapController = MapController();
   final PanelController panelController = PanelController();
   ScrollController scrollController = ScrollController();
@@ -131,6 +133,34 @@ class MapModel extends ChangeNotifier {
 
   void clearPolyline() {
     _polylines.clear();
+    notifyListeners();
+  }
+
+  void changeCtrl(int type) {
+    switch (type) {
+      case 0:
+        if (_points.length < 2) {
+          _points.add({'ctrl': TextEditingController(), 'point': null});
+        }
+        break;
+      case 1:
+        if (_points.length > 2) {
+          while (_points.length != 2) {
+            _points.removeAt(1);
+          }
+        }
+        if (_points.length < 2) {
+          _points.add({'ctrl': TextEditingController(), 'point': null});
+        }
+        break;
+      case 2:
+        if (_points.length > 1) {
+          while (_points.length != 1) {
+            _points.removeAt(1);
+          }
+        }
+        break;
+    }
     notifyListeners();
   }
 

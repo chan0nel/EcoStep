@@ -18,7 +18,6 @@ class AuthenticationService extends ChangeNotifier {
 
   AuthenticationService() {
     FirebaseAuth.instance.userChanges().listen((newUser) {
-      //userAuthSub = FirebaseAuth.instance.userChanges().listen((newUser) {
       if (newUser == null) {
         return;
       } else {

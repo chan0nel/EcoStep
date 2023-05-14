@@ -2,7 +2,7 @@ import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/logic/database/public_route.dart';
-import 'package:diplom/logic/providers.dart';
+import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/widgets/atlitude_chart.dart';
 import 'package:diplom/widgets/comment_item.dart';
 import 'package:flutter/material.dart';

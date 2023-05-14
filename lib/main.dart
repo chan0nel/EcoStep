@@ -5,7 +5,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:diplom/logic/auth_service.dart';
-import 'package:diplom/logic/providers.dart';
+import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/pages/home_page.dart';
 
 void main() async {

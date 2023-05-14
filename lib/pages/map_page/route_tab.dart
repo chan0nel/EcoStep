@@ -3,7 +3,7 @@ import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/logic/database/public_route.dart';
 import 'package:diplom/logic/database/users.dart';
-import 'package:diplom/logic/providers.dart';
+import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/widgets/atlitude_chart.dart';
 import 'package:diplom/widgets/cust_field.dart';
 import 'package:flutter/material.dart';
@@ -39,10 +39,11 @@ class _RouteTabState extends State<RouteTab> {
   @override
   Widget build(BuildContext context) {
     _controller = TextEditingController(text: widget.mp.name);
-    ScrollController ctrl = Provider.of<MapModel>(context).scrollController;
+    //ScrollController ctrl = Provider.of<MapModel>(context).scrollController;
     return ListView(
       padding: const EdgeInsets.all(10),
-      controller: ctrl,
+      //controller: ctrl,
+      primary: false,
       children: [
         const Text('Название:'),
         CustomField(

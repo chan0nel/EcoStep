@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
-import 'package:diplom/logic/providers.dart';
+import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/logic/theme_provider.dart';
 import 'package:diplom/pages/map_page/route_tab.dart';
 import 'package:flutter/material.dart';

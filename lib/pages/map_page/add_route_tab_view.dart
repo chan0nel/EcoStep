@@ -1,8 +1,8 @@
 // ignore_for_file: non_constant_identifier_names, must_be_immutable, use_build_context_synchronously
 
 import 'package:diplom/logic/database/map_route.dart';
+import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/logic/map_service.dart';
-import 'package:diplom/logic/providers.dart';
 import 'package:diplom/pages/map_page/route_tab.dart';
 import 'package:diplom/widgets/cust_field.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +30,7 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
     'profile': 0,
     'preference': 0,
     'round': 0,
+    'round-length': 1,
     'alt': 0
   };
 
@@ -124,7 +125,7 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
                         index < value.points.length - 1);
               })),
           const SizedBox(height: 10),
-          value.points.length < 5
+          value.points.length < 5 && option['alt'] == 0 && option['round'] == 0
               ? ElevatedButton(
                   onPressed: () {
                     value.addCtrl();
@@ -134,49 +135,92 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
               : const SizedBox.shrink(),
           const SizedBox(height: 10),
           const Text('Дополнительные параметры:'),
-          Row(
-            children: [
-              Checkbox(
-                value: option['round'] == 1,
-                onChanged: (e) {
-                  setState(() {
-                    option['round'] = option['round'] == 1 ? 0 : 1;
-                  });
-                },
-              ),
-              const Text('Круиз (круговой маршрут)')
-            ],
+          CheckboxListTile(
+            contentPadding: const EdgeInsets.all(0),
+            controlAffinity: ListTileControlAffinity.leading,
+            title: const Text('Круиз'),
+            value: option['round'] == 1,
+            onChanged: (e) {
+              setState(() {
+                option['alt'] = 0;
+                option['round'] = option['round'] == 1 ? 0 : 1;
+              });
+              if (option['round'] == 1) {
+                value.changeCtrl(2);
+              } else {
+                value.changeCtrl(0);
+              }
+            },
           ),
-          Row(
-            children: [
-              Checkbox(
-                value: option['alt'] == 1,
-                onChanged: (e) {
-                  setState(() {
-                    option['alt'] = option['alt'] == 1 ? 0 : 1;
-                  });
-                },
-              ),
-              const Text('Несколько вариаций маршрута')
-            ],
+          option['round'] == 1
+              ? const Text('Предпочтительная длина маршрута:')
+              : const SizedBox.shrink(),
+          option['round'] == 1
+              ? Slider(
+                  min: 1,
+                  max: 3,
+                  divisions: 2,
+                  value: option['round-length']!.toDouble(),
+                  label: [
+                    'короткий',
+                    'средний',
+                    'длинный'
+                  ][option['round-length']! - 1],
+                  onChanged: (val) {
+                    setState(() {
+                      option['round-length'] = val.toInt();
+                    });
+                  })
+              : const SizedBox.shrink(),
+          CheckboxListTile(
+            contentPadding: const EdgeInsets.all(0),
+            controlAffinity: ListTileControlAffinity.leading,
+            title: const Text('Несколько вариаций маршрута'),
+            value: option['alt'] == 1,
+            onChanged: (e) {
+              setState(() {
+                option['round'] = 0;
+                option['alt'] = option['alt'] == 1 ? 0 : 1;
+              });
+              if (option['alt'] == 1) {
+                value.changeCtrl(1);
+              } else {
+                value.changeCtrl(0);
+              }
+            },
           ),
           const Text('Тип передвижения:'),
           const SizedBox(height: 10.0),
           _choiceRowChips(profileNames.sublist(0, 3), Icons.pedal_bike),
           _choiceRowChips(profileNames.sublist(3, 5), Icons.directions_walk),
           _choiceRowChips([profileNames[5]], Icons.accessible),
-          const Text('Тип маршрута:'),
-          const SizedBox(height: 10.0),
-          _choiceRowChips(['рекомендованный', 'короткий'], null),
+          option['round'] == 0
+              ? const Text('Тип маршрута:')
+              : const SizedBox.shrink(),
+          option['round'] == 0
+              ? const SizedBox(height: 10.0)
+              : const SizedBox.shrink(),
+          option['round'] == 0
+              ? _choiceRowChips(['рекомендованный', 'короткий'], null)
+              : const SizedBox.shrink(),
           const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () async {
               value.setEditPoint(null);
-              lis = await MapService().getRoute(
-                  profile: option['profile'] ?? 0,
-                  points: value.pointList,
-                  preference: option['preference'] ?? 0,
-                  alt: option['alt'] == 1);
+              if (option['round'] == 0) {
+                lis = await MapService().getRoute(
+                    profile: option['profile'] ?? 0,
+                    points: value.pointList,
+                    preference: option['preference'] ?? 0,
+                    alt: option['alt'] == 1);
+              } else {
+                lis.clear();
+                MapRoute m = await MapService().getRoundedRoute(
+                    profile: option['profile'] ?? 0,
+                    points: value.pointList,
+                    length: option['round-length'] ?? 1);
+                lis.add(m);
+              }
               if (lis.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text('Ошибка. Попробуйте еще раз.')));

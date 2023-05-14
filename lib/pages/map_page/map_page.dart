@@ -1,7 +1,7 @@
+import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/logic/theme_provider.dart';
 import 'package:diplom/pages/map_page/add_route_tab_view.dart';
-import 'package:diplom/logic/providers.dart';
 import 'package:diplom/pages/routes_page/see_more.dart';
 import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/material.dart';
@@ -170,13 +170,19 @@ class _MapPageState extends State<MapPage>
                       controller: _tabController,
                       tabs: _tabs['tab'].cast<Widget>(),
                     ),
+                    // _tabController.length != 0
+                    //     ? Expanded(
+                    //         child: _tabs['tab-view']
+                    //             .cast<Widget>()[_tabController.index],
+                    //       )
+                    //     : const SizedBox.shrink(),
                     Expanded(
                       child: ExtendedTabBarView(
                         physics: const NeverScrollableClampingScrollPhysics(),
                         controller: _tabController,
                         children: _tabs['tab-view'].cast<Widget>(),
-                        link: true,
                         shouldIgnorePointerWhenScrolling: false,
+                        cacheExtent: 2,
                       ),
                     )
                   ],

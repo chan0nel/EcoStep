@@ -2,6 +2,7 @@ import 'package:diplom/logic/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_charts/charts.dart' as charts;
+import 'package:syncfusion_flutter_charts/sparkcharts.dart';
 
 class AtlitudeChart extends StatelessWidget {
   final List<double> data;
@@ -14,9 +15,9 @@ class AtlitudeChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<dynamic> list = [];
-    if (data.length > 50) {
+    if (data.length > 30) {
       for (var i = 0; i < data.length; i++) {
-        if (i % (5 * (data.length / 50).floor()) == 0) {
+        if (i % (5 * (data.length / 30).floor()) == 0) {
           list.add([data[i], (distance / data.length * i).round()]);
         }
       }
@@ -37,9 +38,11 @@ class AtlitudeChart extends StatelessWidget {
         tooltipBehavior: _tooltipBehavior,
         series: <charts.ChartSeries>[
           charts.AreaSeries(
+              borderDrawMode: charts.BorderDrawMode.all,
+              borderWidth: 5,
               color: value.curTheme
                   ? value.theme.primaryColor
-                  : Color.fromARGB(255, 255, 191, 43),
+                  : const Color.fromARGB(255, 255, 191, 43),
               name: 'высота',
               enableTooltip: true,
               dataSource: list,

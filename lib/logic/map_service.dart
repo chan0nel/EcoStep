@@ -28,7 +28,7 @@ class MapService {
         instructions: false,
         coordinates: points,
         alternativeRoutes: alt
-            ? {'target_count': 3, 'share_factor': 0.5, 'weight_factor': 1.5}
+            ? {'target_count': 2, 'share_factor': 0.5, 'weight_factor': 1.5}
             : null,
         continueStraight: true,
         elevation: true,
@@ -47,8 +47,7 @@ class MapService {
   Future<MapRoute> getRoundedRoute({
     required int profile,
     required List<ORSCoordinate> points,
-    int length = 2000,
-    int pointsNum = 10,
+    int length = 2,
   }) async {
     try {
       final routeJSON = await _ors.directionsMultiRouteGeoJsonPost(
@@ -56,8 +55,8 @@ class MapService {
           instructions: false,
           options: {
             'round_trip': {
-              'length': length,
-              'points': pointsNum,
+              'length': length * 2500,
+              'points': 10 * length,
               'seed': DateTime.now().microsecondsSinceEpoch / 1000,
             }
           },

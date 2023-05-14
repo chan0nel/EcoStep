@@ -97,6 +97,19 @@ class _ProfilePageState extends State<ProfilePage>
       appBar: AppBar(
         title: const Text('Ваш профиль'),
         centerTitle: true,
+        actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, value, child) {
+              return IconButton(
+                  onPressed: () {
+                    value.toggleTheme();
+                  },
+                  icon: value.curTheme
+                      ? const Icon(Icons.light_mode)
+                      : const Icon(Icons.dark_mode));
+            },
+          )
+        ],
       ),
       body: FutureBuilder(
         builder: (context, snapshot) {
@@ -142,15 +155,6 @@ class _ProfilePageState extends State<ProfilePage>
                         );
                       },
                     ),
-                    Consumer<ThemeProvider>(
-                      builder: (context, value, child) {
-                        return ElevatedButton(
-                            onPressed: () {
-                              value.toggleTheme();
-                            },
-                            child: Text('change'));
-                      },
-                    )
                   ],
                 ),
               ));
