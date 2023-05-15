@@ -50,8 +50,10 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
         ),
         Flexible(
           child: Consumer<MapModel>(
-            builder: (context, value, child) =>
-                CustomField(ctrl: value.points[index]['ctrl']),
+            builder: (context, value, child) => CustomField(
+              ctrl: value.points[index]['ctrl'],
+              onSubm: true,
+            ),
           ),
         ),
         del

@@ -27,7 +27,7 @@ class _PasswordFieldState extends State<PasswordField> {
       obscureText: !passVis,
       textAlignVertical: TextAlignVertical.bottom,
       maxLength: 16,
-      style: const TextStyle(fontSize: 24),
+      style: const TextStyle(fontSize: 16),
       decoration: InputDecoration(
         counterText: '   ${widget.ctrl.text.length.toString()}/16',
         counterStyle: TextStyle(color: Theme.of(context).hintColor),
@@ -45,8 +45,8 @@ class _PasswordFieldState extends State<PasswordField> {
             });
           },
           icon: passVis
-              ? const Icon(Icons.visibility_off_rounded, size: 32)
-              : const Icon(Icons.visibility_rounded, size: 32),
+              ? const Icon(Icons.visibility_off_rounded, size: 28)
+              : const Icon(Icons.visibility_rounded, size: 28),
         ),
       ),
       onChanged: (value) {

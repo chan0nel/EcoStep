@@ -44,6 +44,7 @@ class MyApp extends StatelessWidget {
           title: 'EcoStep',
           debugShowCheckedModeBanner: false,
           theme: Provider.of<ThemeProvider>(context).theme,
+          locale: Locale('ru'),
           home: const HomePage(),
         );
       },

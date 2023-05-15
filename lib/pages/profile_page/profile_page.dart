@@ -4,6 +4,7 @@ import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/users.dart';
 import 'package:diplom/pages/auth_page/auth_page.dart';
+import 'package:diplom/widgets/confirm_dialog.dart';
 import 'package:diplom/widgets/cust_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -230,8 +231,14 @@ class _ProfilePageState extends State<ProfilePage>
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white),
                           onPressed: () async {
-                            await value.signOut();
-                            _update();
+                            final res = await showDialog(
+                                context: context,
+                                builder: (context) =>
+                                    const ConfirmDialog(opt: 'выйти'));
+                            if (res) {
+                              await value.signOut();
+                              _update();
+                            }
                           },
                           child: const Text('Выйти')),
                     )

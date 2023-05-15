@@ -88,21 +88,6 @@ class MapService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> search({required text}) async {
-    try {
-      final searchPoints = await _ors.geocodeAutoCompleteGet(text: text);
-      return searchPoints.features
-          .map((e) => {
-                'label': e.properties['label'],
-                'point': e.geometry.coordinates,
-              })
-          .toList();
-    } catch (e) {
-      print('OSR ERROR4: $e');
-      return [];
-    }
-  }
-
   Future<Position> determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;

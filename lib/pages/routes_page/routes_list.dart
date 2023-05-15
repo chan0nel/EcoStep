@@ -5,6 +5,7 @@ import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/logic/theme_provider.dart';
 import 'package:diplom/pages/map_page/route_tab.dart';
+import 'package:diplom/widgets/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:provider/provider.dart';
@@ -31,7 +32,6 @@ class _RoutesListState extends State<RoutesList> {
   @override
   Widget build(BuildContext context) {
     int length = widget.list['public']!.length;
-    //if (length > 5 && widget.minimal) length = 5;
     return length != 0
         ? SliverList(
             delegate: SliverChildBuilderDelegate(
@@ -161,20 +161,28 @@ class _RoutesListState extends State<RoutesList> {
                               widget.delete != 0
                                   ? ElevatedButton(
                                       onPressed: () async {
-                                        if (widget.delete == 1) {
-                                          await DBService().delete(
-                                              'map-routes/${widget.list['map']![index].id}');
-                                          await DBService().delete(
-                                              'public-routes/${widget.list['public']![index].routeid}');
-                                          widget.update();
-                                        }
-                                        if (widget.delete == 2) {
-                                          final user =
-                                              await AuthenticationService().my;
-                                          user.saves.remove(
-                                              widget.list['map']![index].id);
-                                          await DBService().setUser(user);
-                                          widget.update();
+                                        final res = await showDialog(
+                                            context: context,
+                                            builder: (context) => ConfirmDialog(
+                                                opt:
+                                                    'удалить \'${widget.list['map']![index].name}\''));
+                                        if (res) {
+                                          if (widget.delete == 1) {
+                                            await DBService().delete(
+                                                'map-routes/${widget.list['map']![index].id}');
+                                            await DBService().delete(
+                                                'public-routes/${widget.list['public']![index].routeid}');
+                                            widget.update();
+                                          }
+                                          if (widget.delete == 2) {
+                                            final user =
+                                                await AuthenticationService()
+                                                    .my;
+                                            user.saves.remove(
+                                                widget.list['map']![index].id);
+                                            await DBService().setUser(user);
+                                            widget.update();
+                                          }
                                         }
                                       },
                                       child: const Text('Удалить'))
