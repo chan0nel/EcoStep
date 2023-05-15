@@ -44,11 +44,13 @@ class SliverHeader extends StatelessWidget {
         maxHeight: 60.0,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: const BoxDecoration(
-            border: Border(
+          decoration: BoxDecoration(
+            border: const Border(
               bottom: BorderSide(width: 1, color: Colors.black12),
             ),
-            color: Color.fromARGB(210, 255, 179, 0),
+            color: Theme.of(context).colorScheme.brightness == Brightness.light
+                ? const Color(0xffffb300)
+                : const Color(0xffe4a010),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

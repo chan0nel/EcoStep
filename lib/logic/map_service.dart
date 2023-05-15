@@ -25,6 +25,7 @@ class MapService {
     try {
       String temp = preference == 0 ? 'recommended' : 'shortest';
       final routeJSON = await _ors.directionsMultiRouteGeoJsonPost(
+        language: 'ru',
         instructions: false,
         coordinates: points,
         alternativeRoutes: alt
@@ -80,7 +81,7 @@ class MapService {
           ),
           size: 1,
           layers: ['venue', 'address', 'neighbourhood']);
-      return searchPoints.features[0].properties['label'];
+      return searchPoints.features[0].properties['name'];
     } catch (e) {
       print('OSR ERROR3: $e');
       return '';

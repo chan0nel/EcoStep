@@ -2,9 +2,11 @@
 
 import 'dart:async';
 
+import 'package:async_button/async_button.dart';
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/widgets/cust_field.dart';
 import 'package:diplom/widgets/password_field.dart';
+import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
@@ -18,6 +20,9 @@ class AuthenticationPage extends StatefulWidget {
 
 class _AuthenticationPageState extends State<AuthenticationPage> {
   bool hide = false;
+  final async1 = AsyncBtnStatesController();
+  final async2 = AsyncBtnStatesController();
+  final async3 = AsyncBtnStatesController();
   late StreamSubscription<bool> keyboardSubscription;
 
   List<TextEditingController> signInCtrl = [
@@ -77,7 +82,8 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                 ]),
               )
             : null,
-        body: TabBarView(
+        body: ExtendedTabBarView(
+          cacheExtent: 2,
           children: [
             Padding(
                 padding:
@@ -95,10 +101,28 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                       ctrl: signInCtrl[1],
                     ),
                     Flexible(
-                        child: TextButton(
+                        child: AsyncTextBtn(
+                      asyncBtnStatesController: async3,
+                      failureStyle: const AsyncBtnStateStyle(
+                          widget: Text(
+                        'Нет аккаунта с такой почтой',
+                        style: TextStyle(color: Colors.red, fontSize: 14),
+                      )),
+                      loadingStyle: const AsyncBtnStateStyle(
+                          widget: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(),
+                      )),
                       onPressed: () async {
+                        async3.update(AsyncBtnState.loading);
                         final text = signInCtrl[0].text;
-                        await AuthenticationService().resetPass(email: text);
+                        final mes = await AuthenticationService()
+                            .resetPass(email: text);
+                        if (!mes) {
+                          async3.update(AsyncBtnState.failure);
+                          return;
+                        }
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(
                                 'Письмо на смену пароля отправлено: ${signInCtrl[0].text}')));
@@ -109,13 +133,29 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                       ),
                     )),
                     Flexible(
-                        child: ElevatedButton(
+                        child: AsyncElevatedBtn(
+                      asyncBtnStatesController: async1,
+                      failureStyle: const AsyncBtnStateStyle(
+                          widget: Text(
+                        'Ошибка',
+                        style: TextStyle(color: Colors.red, fontSize: 18),
+                      )),
+                      loadingStyle: const AsyncBtnStateStyle(
+                          widget: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(),
+                      )),
                       onPressed: () async {
+                        async1.update(AsyncBtnState.loading);
                         final mes = await AuthenticationService().signIn(
                             email: signInCtrl[0].text,
                             password: signInCtrl[1].text);
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(SnackBar(content: Text(mes)));
+                        if (!mes) {
+                          async1.update(AsyncBtnState.failure);
+                          return;
+                        }
+                        async1.update(AsyncBtnState.idle);
                         Navigator.pop(context);
                         widget.upd();
                       },
@@ -150,16 +190,35 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                       ctrl: signUpCtrl[3],
                       dop: signUpCtrl[2],
                     ),
-                    ElevatedButton(
+                    AsyncElevatedBtn(
+                        asyncBtnStatesController: async2,
+                        failureStyle: const AsyncBtnStateStyle(
+                            widget: Text(
+                          'Ошибка',
+                          style: TextStyle(color: Colors.red, fontSize: 18),
+                        )),
+                        loadingStyle: const AsyncBtnStateStyle(
+                            widget: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(),
+                        )),
                         onPressed: () async {
+                          async2.update(AsyncBtnState.loading);
                           final auth = AuthenticationService();
                           final mes = await auth.signUp(
                               email: signUpCtrl[0].text,
                               password: signUpCtrl[2].text,
                               nickname: signUpCtrl[1].text);
+                          if (!mes) {
+                            async2.update(AsyncBtnState.failure);
+                            return;
+                          }
                           await auth.verificate();
                           ScaffoldMessenger.of(context)
-                              .showSnackBar(SnackBar(content: Text(mes)));
+                              .showSnackBar(const SnackBar(
+                            content: Text('Не забудьте подтвердить почту.'),
+                          ));
                           Navigator.pop(context);
                           widget.upd();
                         },

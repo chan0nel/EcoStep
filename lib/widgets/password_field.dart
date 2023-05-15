@@ -30,11 +30,14 @@ class _PasswordFieldState extends State<PasswordField> {
       style: const TextStyle(fontSize: 24),
       decoration: InputDecoration(
         counterText: '   ${widget.ctrl.text.length.toString()}/16',
-        counterStyle: const TextStyle(color: Colors.black87),
+        counterStyle: TextStyle(color: Theme.of(context).hintColor),
         helperText: widget.helperText ? hlpTxt : null,
         helperMaxLines: 3,
         helperStyle: TextStyle(
-            fontSize: 13, color: passValid ? Colors.black87 : Colors.red),
+            fontSize: 13,
+            color: passValid || widget.ctrl.text.trim().isEmpty
+                ? Theme.of(context).hintColor
+                : Colors.red),
         suffix: IconButton(
           onPressed: () {
             setState(() {

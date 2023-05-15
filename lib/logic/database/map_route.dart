@@ -87,8 +87,8 @@ class MapRoute {
       points:
           List<LatLng>.from(json['polyline'].map((e) => LatLng.fromJson(e))),
       strokeWidth: 5,
-      color: Color(Random().nextInt(0xffffffff)).withAlpha(0xff),
-      borderStrokeWidth: 1,
+      color: const Color.fromARGB(255, 255, 251, 0),
+      borderStrokeWidth: 3,
       borderColor: Colors.black45,
     );
   }

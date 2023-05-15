@@ -1,3 +1,4 @@
+import 'package:async_button/async_button.dart';
 import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/logic/theme_provider.dart';
@@ -6,6 +7,7 @@ import 'package:diplom/pages/routes_page/see_more.dart';
 import 'package:extended_tabs/extended_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -19,6 +21,7 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage>
     with AutomaticKeepAliveClientMixin<MapPage>, TickerProviderStateMixin {
+  AsyncBtnStatesController asyncCtrl = AsyncBtnStatesController();
   late TabController _tabController;
   final PanelController _panelController = PanelController();
   Polyline viewPolyline = Polyline(points: []);
@@ -47,36 +50,67 @@ class _MapPageState extends State<MapPage>
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: Consumer<MapModel>(
         builder: (context, value, child) {
-          return _panelController.isPanelClosed &&
-                  value.panelController.isPanelClosed
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Flexible(
-                      child: FloatingActionButton(
-                        onPressed: () async {
-                          final pos = await MapService().determinePosition();
-                          value.mapController
-                              .move(LatLng(pos.latitude, pos.longitude), 15);
-                        },
-                        heroTag: null,
-                        child: const Icon(Icons.my_location),
+          return Visibility(
+              visible: _panelController.isPanelClosed &&
+                  value.panelController.isPanelClosed,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  AsyncElevatedBtn(
+                    asyncBtnStatesController: asyncCtrl,
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        minimumSize: const Size(50, 55),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
+                        shadowColor: Colors.black87,
+                        elevation: 3),
+                    loadingStyle: AsyncBtnStateStyle(
+                        widget: SizedBox(
+                      height: 23,
+                      width: 23,
+                      child: CircularProgressIndicator(
+                        color: Theme.of(context).canvasColor,
+                        strokeWidth: 2,
                       ),
+                    )),
+                    failureStyle: AsyncBtnStateStyle(
+                        widget: Icon(
+                      Icons.location_disabled,
+                      color: Theme.of(context).colorScheme.surface,
+                    )),
+                    onPressed: () async {
+                      asyncCtrl.update(AsyncBtnState.loading);
+                      Position? pos = null;
+                      try {
+                        pos = await MapService().determinePosition();
+                      } catch (ex) {
+                        asyncCtrl.update(AsyncBtnState.failure);
+                      }
+                      if (pos != null) {
+                        value.mapController
+                            .move(LatLng(pos.latitude, pos.longitude), 17);
+                        asyncCtrl.update(AsyncBtnState.idle);
+                      }
+                    },
+                    child: Icon(
+                      Icons.my_location,
+                      color: Theme.of(context).colorScheme.surface,
                     ),
-                    const SizedBox(height: 10.0),
-                    FloatingActionButton(
-                      onPressed: () async {
-                        value.addTab('Составить маршрут',
-                            AddRouteTabView(upd: _updateTabs));
-                        _updateTabs();
-                        await _panelController.open();
-                      },
-                      heroTag: null,
-                      child: const Icon(Icons.add),
-                    ),
-                  ],
-                )
-              : const SizedBox.shrink();
+                  ),
+                  const SizedBox(height: 10.0),
+                  FloatingActionButton(
+                    onPressed: () async {
+                      value.addTab('Составить маршрут',
+                          AddRouteTabView(upd: _updateTabs));
+                      _updateTabs();
+                      await _panelController.open();
+                    },
+                    heroTag: null,
+                    child: const Icon(Icons.add),
+                  ),
+                ],
+              ));
         },
       ),
       body: Stack(
@@ -129,6 +163,7 @@ class _MapPageState extends State<MapPage>
               onPanelClosed: () {
                 setState(() {
                   viewPolyline = Polyline(points: []);
+                  asyncCtrl = AsyncBtnStatesController();
                 });
                 value.clearTabs();
                 _updateTabs();
@@ -170,12 +205,6 @@ class _MapPageState extends State<MapPage>
                       controller: _tabController,
                       tabs: _tabs['tab'].cast<Widget>(),
                     ),
-                    // _tabController.length != 0
-                    //     ? Expanded(
-                    //         child: _tabs['tab-view']
-                    //             .cast<Widget>()[_tabController.index],
-                    //       )
-                    //     : const SizedBox.shrink(),
                     Expanded(
                       child: ExtendedTabBarView(
                         physics: const NeverScrollableClampingScrollPhysics(),
@@ -215,6 +244,7 @@ class _MapPageState extends State<MapPage>
                 },
                 onPanelClosed: () {
                   setState(() {
+                    asyncCtrl = AsyncBtnStatesController();
                     viewPolyline = Polyline(points: []);
                     change = false;
                   });

@@ -5,12 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 ThemeData light = ThemeData.from(
     colorScheme: const ColorScheme.light(
-        primary: Color(0xff06061c), secondary: Color.fromARGB(97, 255, 179, 0)),
+        primary: Color(0xff06061c), secondary: Color(0xffffb300)),
+    //secondary: Color(0xffe29e61)
     useMaterial3: true);
 
 ThemeData dark = ThemeData.from(
     colorScheme: const ColorScheme.dark(
-        primary: Color(0xffffb300), secondary: Color.fromARGB(144, 6, 6, 28)),
+        primary: Color(0xfff4a900), secondary: Color(0xa9f4a900)),
     useMaterial3: true);
 
 class ThemeProvider extends ChangeNotifier {

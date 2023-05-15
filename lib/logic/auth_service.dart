@@ -55,28 +55,19 @@ class AuthenticationService extends ChangeNotifier {
     return user?.emailVerified ?? false;
   }
 
-  Future<String> signIn({String? email, String? password}) async {
+  Future<bool> signIn({String? email, String? password}) async {
     try {
       if (isAnonymous) await FirebaseAuth.instance.currentUser!.delete();
-      final uc = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email ?? '', password: password ?? '');
-      return 'Добро пожаловать, ';
+      return true;
     } on FirebaseAuthException catch (e) {
       signUpAnon();
-      switch (e.code) {
-        case 'user-not-found':
-          return 'Пользователь не найден';
-        case 'invalid-email':
-          return 'Неккоректная почта';
-        case 'wrong-password':
-          return 'Неверный пароль';
-        default:
-          return 'Неизвестная ошибка';
-      }
+      return false;
     }
   }
 
-  Future<String> signUp(
+  Future<bool> signUp(
       {String? email, String? password, String? nickname}) async {
     try {
       if (FirebaseAuth.instance.currentUser != null) {
@@ -95,24 +86,9 @@ class AuthenticationService extends ChangeNotifier {
         users.User u = users.User(uid: uc.user!.uid, name: nickname ?? 'user');
         await DBService().setUser(u);
       }
-      return 'Не забудь подтвердить почту: $email';
+      return true;
     } on FirebaseAuthException catch (e) {
-      switch (e.code.toLowerCase()) {
-        case 'weak-password':
-          return 'Слабый пароль';
-        case 'invalid-email':
-          return 'Неккоректная почта';
-        case 'email-already-in-use':
-          return 'Пользователь с данной почтой уже зарегистрирован';
-        case 'provider-already-linked':
-          return 'Провайдер уже подключен';
-        case 'invalid-credential':
-          return 'Некорректный токен';
-        case 'credential-already-in-use':
-          return 'Уже подключен';
-        default:
-          return 'Неизвестная ошибка';
-      }
+      return false;
     }
   }
 
@@ -125,13 +101,14 @@ class AuthenticationService extends ChangeNotifier {
     }
   }
 
-  Future<void> resetPass({String? email = null}) async {
+  Future<bool> resetPass({String? email = null}) async {
     try {
       await FirebaseAuth.instance
           .sendPasswordResetEmail(email: email ?? user!.email ?? '');
       await user?.reload();
+      return true;
     } catch (e) {
-      print(e.toString());
+      return false;
     }
   }
 

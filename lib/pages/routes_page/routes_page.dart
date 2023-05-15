@@ -164,11 +164,27 @@ class _RoutesPageState extends State<RoutesPage>
     return map;
   }
 
+  List<Widget> _sliver(widget1, widget2, flag) {
+    return [
+      Visibility(
+        child: widget1,
+        visible: flag,
+        replacement: const SliverToBoxAdapter(),
+      ),
+      Visibility(
+        child: widget2,
+        visible: flag,
+        replacement: const SliverToBoxAdapter(),
+      )
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           leading: search
               ? IconButton(
                   onPressed: () {
@@ -227,7 +243,6 @@ class _RoutesPageState extends State<RoutesPage>
             loadUsers(),
           ]),
           builder: (context, snapshot) {
-            //List<int> list = [];
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
                 child: CircularProgressIndicator(),
@@ -255,39 +270,43 @@ class _RoutesPageState extends State<RoutesPage>
                     //         ),
                     //       )
                     //     : const SliverToBoxAdapter(),
-                    map['yours']['public'] != null
-                        ? const SliverHeader(text: 'Ваши маршруты')
-                        : const SliverToBoxAdapter(),
-                    map['yours']['public'] != null
-                        ? RoutesList(
-                            list: map['yours'].cast<String, List<dynamic>>() ??
-                                [],
-                            update: refresh,
-                            delete: 1,
-                          )
-                        : const SliverToBoxAdapter(),
-                    map['saves']['public'] != null
-                        ? const SliverHeader(text: 'Сохранненные маршруты')
-                        : const SliverToBoxAdapter(),
-                    map['saves']['public'] != null
-                        ? RoutesList(
-                            list: map['saves'].cast<String, List<dynamic>>() ??
-                                [],
-                            update: refresh,
-                            delete: 2,
-                          )
-                        : const SliverToBoxAdapter(),
-                    const SliverHeader(text: 'Наши маршруты'),
-                    RoutesList(
-                      list: map['default'].cast<String, List<dynamic>>() ?? [],
-                      update: refresh,
-                    ),
-                    const SliverHeader(text: 'Пользовательские маршруты'),
-                    RoutesList(
-                      list: map['other'].cast<String, List<dynamic>>() ?? [],
-                      save: map['yours']['public'] != null,
-                      update: refresh,
-                    ),
+                    ..._sliver(
+                        const SliverHeader(text: 'Ваши маршруты'),
+                        RoutesList(
+                          list:
+                              map['yours'].cast<String, List<dynamic>>() ?? [],
+                          update: refresh,
+                          delete: 1,
+                        ),
+                        map['yours']['public'] != null &&
+                            map['yours']['public'].isNotEmpty),
+                    ..._sliver(
+                        const SliverHeader(text: 'Сохранненные маршруты'),
+                        RoutesList(
+                          list:
+                              map['saves'].cast<String, List<dynamic>>() ?? [],
+                          update: refresh,
+                          delete: 2,
+                        ),
+                        map['saves']['public'] != null &&
+                            map['saves']['public'].isNotEmpty),
+                    ..._sliver(
+                        const SliverHeader(text: 'Наши маршруты'),
+                        RoutesList(
+                          list: map['default'].cast<String, List<dynamic>>() ??
+                              [],
+                          update: refresh,
+                        ),
+                        map['default']['public'].isNotEmpty),
+                    ..._sliver(
+                        const SliverHeader(text: 'Пользовательские маршруты'),
+                        RoutesList(
+                          list:
+                              map['other'].cast<String, List<dynamic>>() ?? [],
+                          save: map['yours']['public'] != null,
+                          update: refresh,
+                        ),
+                        map['other']['public'].isNotEmpty),
                   ],
                 ),
               );

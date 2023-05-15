@@ -7,6 +7,7 @@ import 'package:diplom/pages/map_page/route_tab.dart';
 import 'package:diplom/widgets/cust_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:async_button/async_button.dart';
 
 class AddRouteTabView extends StatefulWidget {
   final Function upd;
@@ -17,6 +18,7 @@ class AddRouteTabView extends StatefulWidget {
 }
 
 class _AddRouteTabViewState extends State<AddRouteTabView> {
+  final asyncCtrl = AsyncBtnStatesController();
   List<MapRoute> lis = [];
   List<String> profileNames = [
     'Обычный',
@@ -204,8 +206,21 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
               ? _choiceRowChips(['рекомендованный', 'короткий'], null)
               : const SizedBox.shrink(),
           const SizedBox(height: 10),
-          ElevatedButton(
+          AsyncElevatedBtn(
+            failureStyle: const AsyncBtnStateStyle(
+                widget: Text(
+              'Ошибка. Попробуйте еще раз',
+              style: TextStyle(color: Colors.red, fontSize: 16),
+            )),
+            loadingStyle: const AsyncBtnStateStyle(
+                widget: SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(),
+            )),
+            asyncBtnStatesController: asyncCtrl,
             onPressed: () async {
+              asyncCtrl.update(AsyncBtnState.loading);
               value.setEditPoint(null);
               if (option['round'] == 0) {
                 lis = await MapService().getRoute(
@@ -221,9 +236,10 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
                     length: option['round-length'] ?? 1);
                 lis.add(m);
               }
+              print(lis.isEmpty);
               if (lis.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('Ошибка. Попробуйте еще раз.')));
+                asyncCtrl.update(AsyncBtnState.failure);
+                return;
               } else {
                 value.addAllPolylines(lis.map((e) => e.polyline).toList());
                 value.addAllViewPolylines(
@@ -234,9 +250,10 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
                   widget.upd();
                 }
               }
+              asyncCtrl.update(AsyncBtnState.idle);
             },
             child: const Text('Составить маршрут'),
-          ),
+          )
         ],
       ),
     );
