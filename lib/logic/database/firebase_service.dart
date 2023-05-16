@@ -1,5 +1,7 @@
+// ignore_for_file: avoid_print
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:diplom/logic/database/public_route.dart';
+import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/users.dart';
 
 import 'map_route.dart';
@@ -13,8 +15,8 @@ class DBService {
       await _instance.collection(collection).get().then((query) {
         listData = query.docs.map((e) {
           switch (collection) {
-            case 'public-routes':
-              return PublicRoute.fromJSON(e.data(), e.id);
+            case 'comments':
+              return Comment.fromJSON(e.data(), e.id);
             case 'map-routes':
               return MapRoute.fromJSON(e.data(), e.id);
             case 'users':
@@ -23,18 +25,18 @@ class DBService {
         }).toList();
       });
     } catch (ex) {
-      // ignore: avoid_print
       print('GET ERROR $ex');
     }
     return listData;
   }
 
-  Future<void> setUser(User us) async {
+  Future<bool> setUser(User us) async {
     try {
       await _instance.doc('users/${us.uid}').set(us.toJson());
+      return true;
     } catch (ex) {
-      // ignore: avoid_print
       print('SET USER ERROR $ex');
+      return false;
     }
   }
 
@@ -49,40 +51,39 @@ class DBService {
         }
       });
     } catch (ex) {
-      // ignore: avoid_print
       print(ex);
     }
     return us;
   }
 
-  Future<String> savePublicRoute(obj, String id) async {
+  Future<bool> saveComment({required Comment obj, String id = ''}) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('public-routes')
-          .doc(id)
-          .set(obj.toJson());
-      return id;
-    } catch (ex) {
-      return ex.toString();
-    }
-  }
-
-  Future<String> saveMapRoutes(obj) async {
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('map-routes')
-          .add(obj.toJson());
-      return doc.id;
-    } catch (ex) {
-      return ex.toString();
-    }
-  }
-
-  Future<void> delete(ref) async {
-    try {
-      await FirebaseFirestore.instance.doc(ref).delete();
+      await _instance.doc('comments/$id').set(obj.toJson());
+      return true;
     } catch (ex) {
       print(ex);
+      return false;
+    }
+  }
+
+  Future<bool> saveMapRoutes(obj) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('map-routes')
+          .add(obj.toJson());
+      return true;
+    } catch (ex) {
+      return false;
+    }
+  }
+
+  Future<bool> delete(ref) async {
+    try {
+      await FirebaseFirestore.instance.doc(ref).delete();
+      return true;
+    } catch (ex) {
+      print(ex);
+      return false;
     }
   }
 }

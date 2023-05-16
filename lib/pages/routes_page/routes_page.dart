@@ -1,9 +1,9 @@
 // ignore_for_file: unused_field, must_be_immutable
 
 import 'package:diplom/logic/auth_service.dart';
+import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
-import 'package:diplom/logic/database/public_route.dart';
 import 'package:diplom/logic/database/users.dart';
 import 'package:diplom/pages/routes_page/routes_list.dart';
 import 'package:diplom/pages/routes_page/sliver_header.dart';
@@ -20,7 +20,7 @@ class RoutesPage extends StatefulWidget {
 class _RoutesPageState extends State<RoutesPage>
     with AutomaticKeepAliveClientMixin<RoutesPage> {
   final DBService _service = DBService();
-  late Future<List<dynamic>> _pr, _mr, _u;
+  late Future<List<dynamic>> _com, _mr, _u;
   AuthenticationService auth = AuthenticationService();
   TextEditingController ctrl = TextEditingController();
   bool search = false;
@@ -34,13 +34,13 @@ class _RoutesPageState extends State<RoutesPage>
         .listen((event) {
       refresh();
     });
-    _pr = loadPublicRoutes();
+    _com = loadComments();
     _mr = loadMapRoutes();
     _u = loadUsers();
   }
 
-  Future<List<dynamic>> loadPublicRoutes() async {
-    return _service.get('public-routes');
+  Future<List<dynamic>> loadComments() async {
+    return _service.get('comments');
   }
 
   Future<List<dynamic>> loadMapRoutes() async {
@@ -53,113 +53,57 @@ class _RoutesPageState extends State<RoutesPage>
 
   Future<void> refresh() async {
     setState(() {
-      _pr = loadPublicRoutes();
+      _com = loadComments();
       _mr = loadMapRoutes();
       _u = loadUsers();
     });
   }
 
   Map<String, dynamic> updateCategories(
-      List<PublicRoute> pr, List<MapRoute> mr, List<User> u) {
+      List<Comment> com, List<MapRoute> mr, List<User> u) {
     Map<String, dynamic> map = {
-      'yours': {},
-      'saves': {},
-      'default': {},
-      'other': {}
+      'yours': [],
+      'saves': [],
+      'default': [],
+      'other': []
     };
     final auth = Provider.of<AuthenticationService>(context, listen: false);
+    String uid = '';
+    User my = User();
     if (!auth.isAnonymous || auth.isVerified) {
-      final uid = auth.uid;
-      final my = u.firstWhere((element) => element.uid == uid);
-      map['yours']['public'] =
-          pr.where((element) => element.uid == uid).toList();
-      map['yours']['map'] = mr
-          .where((element) =>
-              map['yours']['public'].any((el) => el.routeid == element.id))
-          .toList();
-      map['saves']['public'] =
-          pr.where((element) => my.saves.contains(element.routeid)).toList();
-      map['saves']['map'] = mr
-          .where((element) =>
-              map['saves']['public'].any((el) => el.routeid == element.id))
-          .toList();
-      map['saves']['user'] = map['saves']['public'].map((element) {
-        final t = u.firstWhere(
-          (el) => el.uid == element.uid,
-          orElse: () => User(),
-        );
-        if (t.uid != '') {
-          return t;
-        }
-      }).toList();
+      uid = auth.uid;
+      my = u.firstWhere((element) => element.uid == uid);
     }
-    map['default']['public'] =
-        pr.where((element) => element.uid == 'default').toList();
-    map['default']['map'] = mr
-        .where((element) =>
-            map['default']['public'].any((el) => el.routeid == element.id))
-        .toList();
-    List<PublicRoute> list = [];
-    list.addAll(map['yours']['public'] ?? []);
-    list.addAll(map['saves']['public'] ?? []);
-    list.addAll(map['default']['public'] ?? []);
-    map['other']['public'] =
-        pr.where((element) => !list.contains(element)).toList();
-    map['other']['map'] = mr
-        .where((element) =>
-            map['other']['public'].any((el) => el.routeid == element.id))
-        .toList();
-    map['other']['user'] = map['other']['public'].map((element) {
-      final t = u.firstWhere(
-        (el) => el.uid == element.uid,
-        orElse: () => User(),
-      );
-      if (t.uid != '') {
-        return t;
-      }
-    }).toList();
-    if (search && name != null) {
+    for (var element in mr) {
       if (!auth.isAnonymous || auth.isVerified) {
-        for (var i = map['yours']['map'].length - 1; i >= 0; i--) {
-          if (name!
-              .toLowerCase()
-              .allMatches(map['yours']['map'][i].name.toLowerCase())
-              .isEmpty) {
-            map['yours']['map'].removeAt(i);
-            map['yours']['public'].removeAt(i);
-          }
+        if (element.id == uid) {
+          map['yours'].add({
+            'map': element,
+            'comment': com.where((el) => el.routeid == element.id)
+          });
+          continue;
         }
-        for (var i = map['saves']['map'].length - 1; i >= 0; i--) {
-          if (name!
-              .toLowerCase()
-              .allMatches(map['saves']['map'][i].name.toLowerCase())
-              .isEmpty) {
-            map['saves']['map'].removeAt(i);
-            map['saves']['public'].removeAt(i);
-            map['saves']['user'].removeAt(i);
-          }
+        if (my.saves.contains(element.id)) {
+          map['saves'].add({
+            'map': element,
+            'comment': com.where((el) => el.routeid == element.id),
+            'user': u.firstWhere((el) => el.uid == element.uid)
+          });
+          continue;
         }
       }
-
-      for (var i = map['default']['map'].length - 1; i >= 0; i--) {
-        if (name!
-            .toLowerCase()
-            .allMatches(map['default']['map'][i].name.toLowerCase())
-            .isEmpty) {
-          map['default']['map'].removeAt(i);
-          map['default']['public'].removeAt(i);
-        }
+      if (element.uid == 'default') {
+        map['default'].add({
+          'map': element,
+          'comment': com.where((el) => el.routeid == element.id),
+        });
+        continue;
       }
-      for (var i = map['other']['map'].length - 1; i >= 0; i--) {
-        if (name!
-            .toLowerCase()
-            .allMatches(map['other']['map'][i].name.toLowerCase())
-            .isEmpty) {
-          map['other']['map'].removeAt(i);
-          map['other']['public'].removeAt(i);
-          map['other']['user'].removeAt(i);
-        }
-      }
+      map['other'].add({
+        'map': element,
+        'comment': com.where((el) => el.routeid == element.id),
+        'user': u.firstWhere((el) => el.uid == element.uid)
+      });
     }
     return map;
   }
@@ -238,7 +182,7 @@ class _RoutesPageState extends State<RoutesPage>
         ),
         body: FutureBuilder(
           future: Future.wait([
-            loadPublicRoutes(),
+            loadComments(),
             loadMapRoutes(),
             loadUsers(),
           ]),
@@ -252,7 +196,7 @@ class _RoutesPageState extends State<RoutesPage>
             } else {
               final data = snapshot.data ?? [];
               Map<String, dynamic> map = updateCategories(
-                  data[0].cast<PublicRoute>(),
+                  data[0].cast<Comment>(),
                   data[1].cast<MapRoute>(),
                   data[2].cast<User>());
               return RefreshIndicator(
@@ -273,8 +217,7 @@ class _RoutesPageState extends State<RoutesPage>
                     ..._sliver(
                         const SliverHeader(text: 'Ваши маршруты'),
                         RoutesList(
-                          list:
-                              map['yours'].cast<String, List<dynamic>>() ?? [],
+                          list: map['yours'].cast<List<dynamic>>() ?? [],
                           update: refresh,
                           delete: 1,
                         ),

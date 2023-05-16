@@ -1,7 +1,7 @@
 import 'package:diplom/logic/auth_service.dart';
+import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
-import 'package:diplom/logic/database/public_route.dart';
 import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/widgets/atlitude_chart.dart';
 import 'package:diplom/widgets/comment_item.dart';
@@ -29,14 +29,14 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
     super.initState();
   }
 
-  Future<void> _submit(String value, PublicRoute pr) async {
-    if (value.trim() != '') {
-      setState(() {
-        pr.comments.add({'uid': AuthenticationService().uid, 'text': value});
-      });
-      await DBService().savePublicRoute(pr, pr.routeid);
-      ctrl.text = '';
-    }
+  Future<void> _submit(String value, List<Comment> com) async {
+    // if (value.trim() != '') {
+    //   setState(() {
+    //     pr.comments.add({'uid': AuthenticationService().uid, 'text': value});
+    //   });
+    //   await DBService().savePublicRoute(pr, pr.routeid);
+    //   ctrl.text = '';
+    // }
   }
 
   @override
@@ -47,7 +47,7 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
           return const SizedBox.shrink();
         }
         MapRoute mr = value.route['map'];
-        PublicRoute pr = value.route['public'];
+        //PublicRoute pr = value.route['public'];
 
         return ListView(
           padding: const EdgeInsets.fromLTRB(5, 5, 5, 100),
@@ -78,44 +78,44 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
             Text('Спуск: ${mr.descent}'),
             const Divider(),
             const Text('Комментарии:'),
-            FutureBuilder(
-              future: _getUser,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done) {
-                  List<dynamic> users = [];
-                  for (var i = 0; i < pr.comments.length; i++) {
-                    for (var j = 0; j < snapshot.data!.length; j++) {
-                      if (pr.comments[i]['uid'] == snapshot.data![j].uid) {
-                        users.add([snapshot.data![j], pr.comments[i]['text']]);
-                      }
-                    }
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.all(0),
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: users.length,
-                    separatorBuilder: (context, index) => const Divider(),
-                    itemBuilder: (context, index) {
-                      return CommentItem(
-                          title: users[index][0].name,
-                          photo: users[index][0].photo,
-                          comment: users[index][1]);
-                    },
-                  );
-                }
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox(
-                    height: 30,
-                    child: Center(
-                      child:
-                          UnconstrainedBox(child: CircularProgressIndicator()),
-                    ),
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
+            // FutureBuilder(
+            //   future: _getUser,
+            //   builder: (context, snapshot) {
+            //     if (snapshot.connectionState == ConnectionState.done) {
+            //       List<dynamic> users = [];
+            //       for (var i = 0; i < pr.comments.length; i++) {
+            //         for (var j = 0; j < snapshot.data!.length; j++) {
+            //           if (pr.comments[i]['uid'] == snapshot.data![j].uid) {
+            //             users.add([snapshot.data![j], pr.comments[i]['text']]);
+            //           }
+            //         }
+            //       }
+            //       return ListView.separated(
+            //         padding: const EdgeInsets.all(0),
+            //         shrinkWrap: true,
+            //         physics: const NeverScrollableScrollPhysics(),
+            //         itemCount: users.length,
+            //         separatorBuilder: (context, index) => const Divider(),
+            //         itemBuilder: (context, index) {
+            //           return CommentItem(
+            //               title: users[index][0].name,
+            //               photo: users[index][0].photo,
+            //               comment: users[index][1]);
+            //         },
+            //       );
+            //     }
+            //     if (snapshot.connectionState == ConnectionState.waiting) {
+            //       return const SizedBox(
+            //         height: 30,
+            //         child: Center(
+            //           child:
+            //               UnconstrainedBox(child: CircularProgressIndicator()),
+            //         ),
+            //       );
+            //     }
+            //     return const SizedBox.shrink();
+            //   },
+            // ),
             // ListTile(
             //   title: TextField(
             //     controller: ctrl,

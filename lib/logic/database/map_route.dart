@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
@@ -7,6 +5,7 @@ import 'package:open_route_service/open_route_service.dart';
 
 class MapRoute {
   late String id;
+  late String uid;
   late String name;
   late Polyline polyline;
   late List<double> atlitude;
@@ -15,6 +14,7 @@ class MapRoute {
   late double distance;
   late double duration;
   late int inxProfile;
+  late List<String> block;
 
   LatLngBounds get bbox => LatLngBounds.fromPoints(polyline.points);
   String get profile => [
@@ -68,14 +68,16 @@ class MapRoute {
     polyline = Polyline(
       points: points,
       strokeWidth: 5,
-      color: const Color.fromARGB(255, 255, 251, 0),
+      color: const Color.fromARGB(255, 255, 208, 0),
       borderStrokeWidth: 3,
       borderColor: Colors.black45,
     );
+    uid = '';
+    block = [];
   }
 
-  MapRoute.fromJSON(Map<String, dynamic> json, String rid) {
-    id = rid;
+  MapRoute.fromJSON(Map<String, dynamic> json, this.id) {
+    uid = json['uid'];
     name = json['name'];
     inxProfile = json['inxProfile'];
     ascent = json['ascent'];
@@ -87,13 +89,15 @@ class MapRoute {
       points:
           List<LatLng>.from(json['polyline'].map((e) => LatLng.fromJson(e))),
       strokeWidth: 5,
-      color: const Color.fromARGB(255, 255, 251, 0),
+      color: const Color.fromARGB(255, 255, 208, 0),
       borderStrokeWidth: 3,
       borderColor: Colors.black45,
     );
+    block = List<String>.from(json['block']);
   }
 
   Map<String, dynamic> toJson() => {
+        'uid': uid,
         'name': name,
         'polyline': polyline.points.map((e) => e.toJson()).toList(),
         'atlitude': atlitude,
@@ -101,6 +105,7 @@ class MapRoute {
         'descent': descent,
         'distance': distance,
         'duration': duration,
-        'inxProfile': inxProfile
+        'inxProfile': inxProfile,
+        'block': block,
       };
 }

@@ -4,7 +4,6 @@ import 'package:async_button/async_button.dart';
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
-import 'package:diplom/logic/database/public_route.dart';
 import 'package:diplom/widgets/atlitude_chart.dart';
 import 'package:diplom/widgets/cust_field.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +11,7 @@ import 'package:provider/provider.dart';
 
 class RouteTab extends StatefulWidget {
   final MapRoute mp;
-  final PublicRoute? pr;
-  const RouteTab({super.key, required this.mp, this.pr = null});
+  const RouteTab({super.key, required this.mp});
 
   @override
   State<RouteTab> createState() => _RouteTabState();
@@ -34,9 +32,8 @@ class _RouteTabState extends State<RouteTab> {
   Future<void> _save() async {
     final DBService service = DBService();
     widget.mp.name = _controller.text;
-    final id = await service.saveMapRoutes(widget.mp);
-    await service.savePublicRoute(
-        PublicRoute(uid: AuthenticationService().uid), id);
+    widget.mp.uid = Provider.of<AuthenticationService>(context).uid;
+    await service.saveMapRoutes(widget.mp);
   }
 
   @override
@@ -62,7 +59,7 @@ class _RouteTabState extends State<RouteTab> {
         Text('Подъем: ${widget.mp.ascent}'),
         Text('Спуск: ${widget.mp.descent}'),
         Visibility(
-          visible: widget.pr == null,
+          visible: widget.mp.uid == '',
           child: Consumer<AuthenticationService>(
             builder: (context, value, child) => AsyncElevatedBtn(
               asyncBtnStatesController: asyncCtrl,
@@ -107,24 +104,6 @@ class _RouteTabState extends State<RouteTab> {
             ),
           ),
         ),
-        // Visibility(
-        //   visible: widget.pr == null,
-        //   child: Consumer<AuthenticationService>(
-        //     builder: (context, value, child) => ElevatedButton(
-        //       onPressed: () async {
-        //         if (value.isAnonymous ||
-        //             !value.isAuthenticated ||
-        //             !value.isVerified) {
-        //           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        //               content: Text('Вам не доступна данная функция')));
-        //         } else {
-        //           await _save();
-        //         }
-        //       },
-        //       child: const Text('Сохранить'),
-        //     ),
-        //   ),
-        // ),
       ],
     );
   }
