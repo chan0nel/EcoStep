@@ -2,7 +2,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:diplom/logic/database/comment.dart';
-import 'package:diplom/logic/database/users.dart';
+import 'package:diplom/logic/database/user.dart';
 
 import 'map_route.dart';
 
@@ -58,7 +58,12 @@ class DBService {
 
   Future<bool> saveComment({required Comment obj, String id = ''}) async {
     try {
-      await _instance.doc('comments/$id').set(obj.toJson());
+      if (id == '') {
+        await _instance.doc('comments/$id').set(obj.toJson());
+      } else {
+        await _instance.collection('comments').add(obj.toJson());
+      }
+
       return true;
     } catch (ex) {
       print(ex);

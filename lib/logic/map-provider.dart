@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_final_fields
+// ignore_for_file: prefer_final_fields, file_names
 
 import 'dart:collection';
 
@@ -16,7 +16,6 @@ class MapModel extends ChangeNotifier {
     {'ctrl': TextEditingController(), 'point': null},
     {'ctrl': TextEditingController(), 'point': null}
   ];
-  List<Map<String, dynamic>> _tempPoints = [];
   final MapController mapController = MapController();
   final PanelController panelController = PanelController();
   ScrollController scrollController = ScrollController();
@@ -25,7 +24,11 @@ class MapModel extends ChangeNotifier {
     'editPoint': null,
   };
   final Map<String, dynamic> _tabs = {'tab': [], 'tab-view': []};
-  final Map<String, dynamic> _route = {'public': null, 'map': null};
+  final Map<String, dynamic> _route = {
+    'map': null,
+    'user': null,
+    'comment': [],
+  };
 
   UnmodifiableListView<Polyline> get polylines =>
       UnmodifiableListView(_polylines);
@@ -36,7 +39,6 @@ class MapModel extends ChangeNotifier {
   UnmodifiableMapView<String, dynamic> get tabs => UnmodifiableMapView(_tabs);
   UnmodifiableMapView<String, dynamic> get states =>
       UnmodifiableMapView(_states);
-
   UnmodifiableMapView<String, dynamic> get route => UnmodifiableMapView(_route);
 
   List<Marker> get markers => _points
@@ -93,9 +95,10 @@ class MapModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changeRoute(Map<String, dynamic> map) {
-    _route['public'] = map['public'];
+  void changeRoute(map) {
     _route['map'] = map['map'];
+    _route['user'] = map['user'];
+    _route['comment'] = map['comment'];
     notifyListeners();
   }
 

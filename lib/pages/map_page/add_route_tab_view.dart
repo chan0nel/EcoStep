@@ -238,7 +238,6 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
                     length: option['round-length'] ?? 1);
                 lis.add(m);
               }
-              print(lis.isEmpty);
               if (lis.isEmpty) {
                 asyncCtrl.update(AsyncBtnState.failure);
                 return;

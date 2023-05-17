@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_init_to_null
+
 import 'package:async_button/async_button.dart';
 import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/logic/map_service.dart';
@@ -60,7 +62,7 @@ class _MapPageState extends State<MapPage>
                     asyncBtnStatesController: asyncCtrl,
                     style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.primary,
-                        minimumSize: const Size(50, 55),
+                        minimumSize: const Size(20, 55),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15)),
                         shadowColor: Colors.black87,

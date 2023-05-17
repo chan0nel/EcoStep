@@ -14,10 +14,14 @@ class User {
   });
 
   User.fromJSON(Map<String, dynamic> json, this.uid) {
-    name = json['name'];
-    photo = json['photo'];
-    saves = List<String>.from(json['saves']);
-    block = List<String>.from(json['block']);
+    try {
+      name = json['name'];
+      photo = json['photo'];
+      saves = List<String>.from(json['saves']);
+      block = List<String>.from(json['block']);
+    } catch (e) {
+      print('user error: $e');
+    }
   }
 
   Map<String, dynamic> toJson() => {

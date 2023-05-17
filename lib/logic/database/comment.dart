@@ -6,16 +6,21 @@ class Comment {
   late List<String> block;
 
   Comment({
-    required this.id,
+    this.id = '',
     required this.uid,
     required this.routeid,
     required this.text,
   });
 
   Comment.fromJSON(Map<String, dynamic> json, this.id) {
-    uid = json['uid'];
-    text = json['text'];
-    block = List<String>.from(json['block']);
+    try {
+      uid = json['uid'];
+      routeid = json['routeid'];
+      text = json['text'];
+      block = List<String>.from(json['block']);
+    } catch (e) {
+      print('comment error: $e');
+    }
   }
 
   Map<String, dynamic> toJson() => {

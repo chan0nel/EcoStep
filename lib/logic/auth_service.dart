@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:diplom/logic/database/users.dart' as users;
+import 'package:diplom/logic/database/user.dart' as users;
 
 class AuthenticationService extends ChangeNotifier {
   late User? user = FirebaseAuth.instance.currentUser;
@@ -61,7 +61,7 @@ class AuthenticationService extends ChangeNotifier {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email ?? '', password: password ?? '');
       return true;
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException {
       signUpAnon();
       return false;
     }
@@ -87,7 +87,7 @@ class AuthenticationService extends ChangeNotifier {
         await DBService().setUser(u);
       }
       return true;
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException {
       return false;
     }
   }

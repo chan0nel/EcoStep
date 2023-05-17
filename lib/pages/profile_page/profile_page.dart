@@ -2,7 +2,7 @@
 
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
-import 'package:diplom/logic/database/users.dart';
+import 'package:diplom/logic/database/user.dart';
 import 'package:diplom/pages/auth_page/auth_page.dart';
 import 'package:diplom/widgets/confirm_dialog.dart';
 import 'package:diplom/widgets/cust_field.dart';

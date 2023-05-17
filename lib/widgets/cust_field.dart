@@ -1,6 +1,4 @@
 // ignore_for_file: avoid_init_to_null
-
-import 'package:diplom/logic/map_service.dart';
 import 'package:flutter/material.dart';
 
 class CustomField extends StatefulWidget {

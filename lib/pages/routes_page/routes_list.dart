@@ -1,8 +1,10 @@
+// ignore_for_file: unused_import
+
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
-import 'package:diplom/logic/database/users.dart';
+import 'package:diplom/logic/database/user.dart';
 import 'package:diplom/logic/map-provider.dart';
 import 'package:diplom/logic/theme_provider.dart';
 import 'package:diplom/widgets/confirm_dialog.dart';
@@ -31,7 +33,7 @@ class RoutesList extends StatefulWidget {
 class _RoutesListState extends State<RoutesList> {
   @override
   Widget build(BuildContext context) {
-    int length = widget.list.length;
+    final length = widget.list.length;
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         semanticIndexOffset: 2,
@@ -39,7 +41,7 @@ class _RoutesListState extends State<RoutesList> {
         (context, index) {
           MapRoute mr = widget.list[index]['map'];
           User? user = widget.list[index]['user'];
-          List<Comment> com = widget.list[index]['com'];
+          List<Comment>? com = widget.list[index]['comment'];
           return ExpansionTile(
             // leading: IconButton(
             //     onPressed: () {}, icon: const Icon(Icons.info_outline)),
@@ -52,7 +54,7 @@ class _RoutesListState extends State<RoutesList> {
                   decoration: const BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(5))),
                   child: Image.asset(
-                    'images/photo (${widget.list[index]['user'].photo}).png',
+                    'images/photo (${widget.list[index]['user']?.photo}).png',
                     width: 35,
                     height: 35,
                   ),
@@ -60,7 +62,7 @@ class _RoutesListState extends State<RoutesList> {
               ),
               Visibility(
                 visible: user != null,
-                child: Text(widget.list[index]['user'].name),
+                child: Text(widget.list[index]['user']?.name ?? ''),
               ),
               Visibility(
                 visible: user != null,
@@ -68,7 +70,7 @@ class _RoutesListState extends State<RoutesList> {
               ),
               const Icon(Icons.comment_outlined),
               const SizedBox(width: 5),
-              Text(com.length.toString())
+              Text(com?.length.toString() ?? '0')
             ]),
             children: [
               Container(
@@ -125,75 +127,62 @@ class _RoutesListState extends State<RoutesList> {
                           '${mr.descent.toString()}',
                           maxLines: 2,
                         ),
-                        // Consumer<MapModel>(
-                        //   builder: (context, value, child) {
-                        //     return ElevatedButton(
-                        //         onPressed: () async {
-                        //           if (value.panelController.isPanelOpen) {
-                        //             await value.panelController.close();
-                        //           }
-                        //           value.changeRoute({
-                        //             'public': widget.list['public']![index],
-                        //             'map': widget.list['map']![index],
-                        //           });
-                        //           value.addPolyline(
-                        //               widget.list['map']![index].polyline,
-                        //               widget
-                        //                   .list['map']![index].accentPolyline);
-                        //           value.mapController.move(
-                        //               widget.list['map']![index].bbox.center,
-                        //               13);
-                        //           await value.panelController.open();
-                        //           await value.panelController
-                        //               .animatePanelToSnapPoint(
-                        //                   duration: const Duration(
-                        //                       milliseconds: 100));
-                        //           await value.pageController.animateToPage(0,
-                        //               duration:
-                        //                   const Duration(milliseconds: 100),
-                        //               curve: Curves.bounceIn);
-                        //         },
-                        //         child: const Text('Узнать больше'));
-                        //   },
-                        // ),
-                        // widget.delete != 0
-                        //     ? ElevatedButton(
-                        //         onPressed: () async {
-                        //           final res = await showDialog(
-                        //               context: context,
-                        //               builder: (context) => ConfirmDialog(
-                        //                   opt:
-                        //                       'удалить \'${widget.list['map']![index].name}\''));
-                        //           if (res) {
-                        //             if (widget.delete == 1) {
-                        //               await DBService().delete(
-                        //                   'map-routes/${widget.list['map']![index].id}');
-                        //               await DBService().delete(
-                        //                   'public-routes/${widget.list['public']![index].routeid}');
-                        //               widget.update();
-                        //             }
-                        //             if (widget.delete == 2) {
-                        //               final user =
-                        //                   await AuthenticationService().my;
-                        //               user.saves.remove(
-                        //                   widget.list['map']![index].id);
-                        //               await DBService().setUser(user);
-                        //               widget.update();
-                        //             }
-                        //           }
-                        //         },
-                        //         child: const Text('Удалить'))
-                        //     : const SizedBox.shrink(),
-                        // widget.save
-                        //     ? ElevatedButton(
-                        //         onPressed: () async {
-                        //           final user = await AuthenticationService().my;
-                        //           user.saves.add(widget.list['map']![index].id);
-                        //           await DBService().setUser(user);
-                        //           widget.update();
-                        //         },
-                        //         child: const Text('Сохранить'))
-                        //     : const SizedBox.shrink()
+                        Consumer<MapModel>(
+                          builder: (context, value, child) {
+                            return ElevatedButton(
+                                onPressed: () async {
+                                  value.changeRoute(widget.list[index]);
+                                  value.addPolyline(
+                                      mr.polyline, mr.accentPolyline);
+                                  await value.panelController.open();
+                                  await value.panelController
+                                      .animatePanelToSnapPoint(
+                                          duration: const Duration(
+                                              milliseconds: 100));
+                                  await value.pageController.animateToPage(0,
+                                      duration:
+                                          const Duration(milliseconds: 100),
+                                      curve: Curves.bounceIn);
+                                },
+                                child: const Text('Узнать больше'));
+                          },
+                        ),
+                        Visibility(
+                          visible: widget.delete != 0,
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                final res = await showDialog(
+                                    context: context,
+                                    builder: (context) => ConfirmDialog(
+                                        opt: 'удалить \'${mr.name}\''));
+                                if (res) {
+                                  if (widget.delete == 1) {
+                                    await DBService()
+                                        .delete('map-routes/${mr.id}');
+                                    widget.update();
+                                  }
+                                  if (widget.delete == 2) {
+                                    final user =
+                                        await AuthenticationService().my;
+                                    user.saves.remove(mr.id);
+                                    await DBService().setUser(user);
+                                    widget.update();
+                                  }
+                                }
+                              },
+                              child: const Text('Удалить')),
+                        ),
+                        Visibility(
+                          visible: widget.save,
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                final user = await AuthenticationService().my;
+                                user.saves.add(mr.id);
+                                await DBService().setUser(user);
+                                widget.update();
+                              },
+                              child: const Text('Сохранить')),
+                        )
                       ],
                     )
                   ],

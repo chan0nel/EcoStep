@@ -1,10 +1,10 @@
-// ignore_for_file: unused_field, must_be_immutable
+// ignore_for_file: unused_field, must_be_immutable, avoid_init_to_null
 
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
-import 'package:diplom/logic/database/users.dart';
+import 'package:diplom/logic/database/user.dart';
 import 'package:diplom/pages/routes_page/routes_list.dart';
 import 'package:diplom/pages/routes_page/sliver_header.dart';
 import 'package:flutter/material.dart';
@@ -76,18 +76,19 @@ class _RoutesPageState extends State<RoutesPage>
     }
     for (var element in mr) {
       if (!auth.isAnonymous || auth.isVerified) {
-        if (element.id == uid) {
+        if (element.uid == uid) {
           map['yours'].add({
             'map': element,
-            'comment': com.where((el) => el.routeid == element.id)
+            'comment': com.where((el) => el.routeid == element.id).toList()
           });
           continue;
         }
         if (my.saves.contains(element.id)) {
           map['saves'].add({
             'map': element,
-            'comment': com.where((el) => el.routeid == element.id),
-            'user': u.firstWhere((el) => el.uid == element.uid)
+            'comment': com.where((el) => el.routeid == element.id).toList(),
+            'user': u.firstWhere((el) => el.uid == element.uid,
+                orElse: () => User())
           });
           continue;
         }
@@ -95,13 +96,13 @@ class _RoutesPageState extends State<RoutesPage>
       if (element.uid == 'default') {
         map['default'].add({
           'map': element,
-          'comment': com.where((el) => el.routeid == element.id),
+          'comment': com.where((el) => el.routeid == element.id).toList(),
         });
         continue;
       }
       map['other'].add({
         'map': element,
-        'comment': com.where((el) => el.routeid == element.id),
+        'comment': com.where((el) => el.routeid == element.id).toList(),
         'user': u.firstWhere((el) => el.uid == element.uid)
       });
     }
@@ -217,39 +218,34 @@ class _RoutesPageState extends State<RoutesPage>
                     ..._sliver(
                         const SliverHeader(text: 'Ваши маршруты'),
                         RoutesList(
-                          list: map['yours'].cast<List<dynamic>>() ?? [],
+                          list: map['yours'] ?? [],
                           update: refresh,
                           delete: 1,
                         ),
-                        map['yours']['public'] != null &&
-                            map['yours']['public'].isNotEmpty),
+                        map['yours'].isNotEmpty),
                     ..._sliver(
                         const SliverHeader(text: 'Сохранненные маршруты'),
                         RoutesList(
-                          list:
-                              map['saves'].cast<String, List<dynamic>>() ?? [],
+                          list: map['saves'] ?? [],
                           update: refresh,
                           delete: 2,
                         ),
-                        map['saves']['public'] != null &&
-                            map['saves']['public'].isNotEmpty),
+                        map['saves'].isNotEmpty),
                     ..._sliver(
                         const SliverHeader(text: 'Наши маршруты'),
                         RoutesList(
-                          list: map['default'].cast<String, List<dynamic>>() ??
-                              [],
+                          list: map['default'] ?? [],
                           update: refresh,
                         ),
-                        map['default']['public'].isNotEmpty),
+                        map['default'].isNotEmpty),
                     ..._sliver(
                         const SliverHeader(text: 'Пользовательские маршруты'),
                         RoutesList(
-                          list:
-                              map['other'].cast<String, List<dynamic>>() ?? [],
-                          save: map['yours']['public'] != null,
+                          list: map['other'] ?? [],
+                          save: map['yours'] != null,
                           update: refresh,
                         ),
-                        map['other']['public'].isNotEmpty),
+                        map['other'].isNotEmpty),
                   ],
                 ),
               );

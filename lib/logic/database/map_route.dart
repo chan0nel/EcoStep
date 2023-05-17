@@ -77,23 +77,27 @@ class MapRoute {
   }
 
   MapRoute.fromJSON(Map<String, dynamic> json, this.id) {
-    uid = json['uid'];
-    name = json['name'];
-    inxProfile = json['inxProfile'];
-    ascent = json['ascent'];
-    descent = json['descent'];
-    distance = json['distance'];
-    duration = json['duration'];
-    atlitude = List<double>.from(json['atlitude']);
-    polyline = Polyline(
-      points:
-          List<LatLng>.from(json['polyline'].map((e) => LatLng.fromJson(e))),
-      strokeWidth: 5,
-      color: const Color.fromARGB(255, 255, 208, 0),
-      borderStrokeWidth: 3,
-      borderColor: Colors.black45,
-    );
-    block = List<String>.from(json['block']);
+    try {
+      uid = json['uid'];
+      name = json['name'];
+      inxProfile = json['inxProfile'];
+      ascent = json['ascent'];
+      descent = json['descent'];
+      distance = json['distance'];
+      duration = json['duration'];
+      atlitude = List<double>.from(json['atlitude']);
+      polyline = Polyline(
+        points:
+            List<LatLng>.from(json['polyline'].map((e) => LatLng.fromJson(e))),
+        strokeWidth: 5,
+        color: const Color.fromARGB(255, 255, 208, 0),
+        borderStrokeWidth: 3,
+        borderColor: Colors.black45,
+      );
+      block = List<String>.from(json['block']);
+    } catch (e) {
+      print('map error: $e');
+    }
   }
 
   Map<String, dynamic> toJson() => {
