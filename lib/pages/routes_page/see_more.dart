@@ -5,9 +5,10 @@ import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/logic/database/user.dart';
-import 'package:diplom/logic/map-provider.dart';
+import 'package:diplom/logic/map_provider.dart';
 import 'package:diplom/widgets/atlitude_chart.dart';
 import 'package:diplom/widgets/comment_item.dart';
+import 'package:diplom/widgets/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -35,13 +36,12 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
   Future<void> _submit(String routeid, List<Comment> com) async {
     if (ctrl.text.trim() != '') {
       final c = Comment(
-          uid: Provider.of<AuthenticationService>(context, listen: false).uid,
-          routeid: routeid,
-          text: ctrl.text);
+          uid: AuthenticationService().uid, routeid: routeid, text: ctrl.text);
       setState(() {
         com.add(c);
       });
-      await DBService().saveComment(obj: c);
+      final a = await DBService().saveComment(obj: c);
+      print(a);
       ctrl.text = '';
     }
   }
@@ -121,9 +121,63 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                     separatorBuilder: (context, index) => const Divider(),
                     itemBuilder: (context, index) {
                       return CommentItem(
-                          title: users[index][0].name,
-                          photo: users[index][0].photo,
-                          comment: users[index][1].text);
+                        title: users[index][0].name,
+                        photo: users[index][0].photo,
+                        comment: users[index][1].text,
+                        func1: () async {
+                          if (user!.block
+                              .contains(AuthenticationService().uid)) {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Text(
+                                  'Вы уже пожаловались на данного пользователя'),
+                            ));
+                          } else {
+                            final res = await showDialog(
+                              context: context,
+                              builder: (context) => ConfirmDialog(
+                                  opt: 'пожаловаться на пользователя '
+                                      '\'${user.name}\''),
+                            );
+                            if (res) {
+                              user.block.add(AuthenticationService().uid);
+                              await DBService()
+                                  .update('users/${user.uid}', user);
+                              if (user.block.length >= 5) {
+                                setState(() {
+                                  _getUser = getUsers();
+                                });
+                              }
+                            }
+                          }
+                        },
+                        func2: () async {
+                          if (mr.block.contains(AuthenticationService().uid)) {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content:
+                                  Text('Вы уже пожаловались на данный маршрут'),
+                            ));
+                          } else {
+                            final res = await showDialog(
+                              context: context,
+                              builder: (context) => ConfirmDialog(
+                                  opt:
+                                      'пожаловаться на комментарий \'${com[index].text}\''),
+                            );
+                            if (res) {
+                              com[index].block.add(AuthenticationService().uid);
+                              await DBService().update(
+                                  'comments/${com[index].id}', com[index]);
+                              if (com[index].block.length >= 5) {
+                                setState(() {
+                                  _getUser = getUsers();
+                                });
+                              }
+                            }
+                          }
+                        },
+                      );
                     },
                   );
                 }

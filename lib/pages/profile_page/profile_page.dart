@@ -18,8 +18,7 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage>
-    with AutomaticKeepAliveClientMixin<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> {
   List<bool> isSelected = [true, false];
   late Future<User> _user;
 
@@ -93,7 +92,6 @@ class _ProfilePageState extends State<ProfilePage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ваш профиль'),
@@ -254,7 +252,4 @@ class _ProfilePageState extends State<ProfilePage>
       ),
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 }

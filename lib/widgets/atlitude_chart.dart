@@ -37,16 +37,19 @@ class AtlitudeChart extends StatelessWidget {
         tooltipBehavior: _tooltipBehavior,
         series: <charts.ChartSeries>[
           charts.AreaSeries(
-              borderDrawMode: charts.BorderDrawMode.all,
-              borderWidth: 5,
-              color: value.curTheme
+              borderDrawMode: charts.BorderDrawMode.top,
+              borderColor: value.curTheme
                   ? value.theme.primaryColor
                   : const Color.fromARGB(255, 255, 191, 43),
+              borderWidth: 5,
+              color: value.curTheme
+                  ? value.theme.primaryColor.withAlpha(0)
+                  : const Color.fromARGB(0, 255, 191, 43),
               name: 'высота',
               enableTooltip: true,
               dataSource: list,
               markerSettings: const charts.MarkerSettings(
-                  isVisible: true, height: 5, width: 5),
+                  isVisible: true, height: 8, width: 8),
               xValueMapper: (element, index) => element[1],
               yValueMapper: (element, index) => element[0])
         ],

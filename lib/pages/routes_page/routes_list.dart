@@ -5,7 +5,7 @@ import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/logic/database/user.dart';
-import 'package:diplom/logic/map-provider.dart';
+import 'package:diplom/logic/map_provider.dart';
 import 'package:diplom/logic/theme_provider.dart';
 import 'package:diplom/widgets/confirm_dialog.dart';
 import 'package:flutter/material.dart';
@@ -14,14 +14,12 @@ import 'package:provider/provider.dart';
 
 class RoutesList extends StatefulWidget {
   final List<dynamic> list;
-  //final bool minimal;
   final bool save;
   final int delete;
   final Function update;
   const RoutesList(
       {super.key,
       required this.list,
-      //this.minimal = true,
       this.save = false,
       this.delete = 0,
       required this.update});
@@ -43,26 +41,95 @@ class _RoutesListState extends State<RoutesList> {
           User? user = widget.list[index]['user'];
           List<Comment>? com = widget.list[index]['comment'];
           return ExpansionTile(
-            // leading: IconButton(
-            //     onPressed: () {}, icon: const Icon(Icons.info_outline)),
+            tilePadding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+            leading: IconButton(
+                onPressed: () async {
+                  if (mr.block.contains(AuthenticationService().uid)) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Вы уже пожаловались на данный маршрут'),
+                    ));
+                  } else {
+                    final res = await showDialog(
+                      context: context,
+                      builder: (context) => ConfirmDialog(
+                          opt: 'пожаловаться на маршрут \'${mr.name}\''),
+                    );
+                    if (res) {
+                      mr.block.add(AuthenticationService().uid);
+                      await DBService().update('map-routes/${mr.id}', mr);
+                      if (mr.block.length >= 5) {
+                        widget.update();
+                      }
+                    }
+                  }
+                },
+                icon: const Icon(Icons.block)),
             title: Text(mr.name),
             subtitle: Row(children: [
               Visibility(
                 visible: user != null,
-                child: Container(
-                  padding: const EdgeInsets.only(right: 5),
-                  decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.all(Radius.circular(5))),
-                  child: Image.asset(
-                    'images/photo (${widget.list[index]['user']?.photo}).png',
-                    width: 35,
-                    height: 35,
+                child: GestureDetector(
+                  onTap: () async {
+                    if (user!.block.contains(AuthenticationService().uid)) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content:
+                            Text('Вы уже пожаловались на данного пользователя'),
+                      ));
+                    } else {
+                      final res = await showDialog(
+                        context: context,
+                        builder: (context) => ConfirmDialog(
+                            opt: 'пожаловаться на пользователя '
+                                '\'${user.name}\''),
+                      );
+                      if (res) {
+                        user.block.add(AuthenticationService().uid);
+                        await DBService().update('users/${user.uid}', user);
+                        if (user.block.length >= 5) {
+                          widget.update();
+                        }
+                      }
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.only(right: 5),
+                    decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(5))),
+                    child: Image.asset(
+                      'images/photo (${widget.list[index]['user']?.photo}).png',
+                      width: 35,
+                      height: 35,
+                    ),
                   ),
                 ),
               ),
               Visibility(
                 visible: user != null,
-                child: Text(widget.list[index]['user']?.name ?? ''),
+                child: GestureDetector(
+                  onTap: () async {
+                    if (user!.block.contains(AuthenticationService().uid)) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content:
+                            Text('Вы уже пожаловались на данного пользователя'),
+                      ));
+                    } else {
+                      final res = await showDialog(
+                        context: context,
+                        builder: (context) => ConfirmDialog(
+                            opt: 'пожаловаться на пользователя '
+                                '\'${user.name}\''),
+                      );
+                      if (res) {
+                        user.block.add(AuthenticationService().uid);
+                        await DBService().update('users/${user.uid}', user);
+                        if (user.block.length >= 5) {
+                          widget.update();
+                        }
+                      }
+                    }
+                  },
+                  child: Text(widget.list[index]['user']?.name ?? ''),
+                ),
               ),
               Visibility(
                 visible: user != null,
@@ -84,7 +151,6 @@ class _RoutesListState extends State<RoutesList> {
                       child: Consumer<ThemeProvider>(
                         builder: (context, value, child) => FlutterMap(
                           options: MapOptions(
-                              keepAlive: true,
                               interactiveFlags: InteractiveFlag.none,
                               bounds: mr.bbox,
                               boundsOptions: const FitBoundsOptions(
@@ -98,7 +164,6 @@ class _RoutesListState extends State<RoutesList> {
                                       'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM',
                             ),
                             PolylineLayer(
-                              saveLayers: true,
                               polylines: [mr.polyline],
                             )
                           ],
@@ -132,17 +197,22 @@ class _RoutesListState extends State<RoutesList> {
                             return ElevatedButton(
                                 onPressed: () async {
                                   value.changeRoute(widget.list[index]);
-                                  value.addPolyline(
-                                      mr.polyline, mr.accentPolyline);
-                                  await value.panelController.open();
-                                  await value.panelController
-                                      .animatePanelToSnapPoint(
-                                          duration: const Duration(
-                                              milliseconds: 100));
                                   await value.pageController.animateToPage(0,
                                       duration:
                                           const Duration(milliseconds: 100),
                                       curve: Curves.bounceIn);
+                                  Polyline pl = Polyline(
+                                      points: mr.polyline.points,
+                                      borderColor: mr.polyline.borderColor,
+                                      color: mr.polyline.color,
+                                      borderStrokeWidth:
+                                          mr.polyline.borderStrokeWidth,
+                                      strokeWidth: mr.polyline.strokeWidth);
+                                  value.addPolyline(pl, mr.accentPolyline);
+                                  await value.panelController
+                                      .animatePanelToSnapPoint(
+                                          duration: const Duration(
+                                              milliseconds: 300));
                                 },
                                 child: const Text('Узнать больше'));
                           },

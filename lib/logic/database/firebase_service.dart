@@ -13,16 +13,21 @@ class DBService {
     List<dynamic> listData = [];
     try {
       await _instance.collection(collection).get().then((query) {
-        listData = query.docs.map((e) {
-          switch (collection) {
-            case 'comments':
-              return Comment.fromJSON(e.data(), e.id);
-            case 'map-routes':
-              return MapRoute.fromJSON(e.data(), e.id);
-            case 'users':
-              return User.fromJSON(e.data(), e.id);
-          }
-        }).toList();
+        listData = query.docs
+            .map((e) {
+              if (e.data()['block'].length < 5) {
+                switch (collection) {
+                  case 'comments':
+                    return Comment.fromJSON(e.data(), e.id);
+                  case 'map-routes':
+                    return MapRoute.fromJSON(e.data(), e.id);
+                  case 'users':
+                    return User.fromJSON(e.data(), e.id);
+                }
+              }
+            })
+            .where((element) => element != null)
+            .toList();
       });
     } catch (ex) {
       print('GET ERROR $ex');
@@ -56,9 +61,19 @@ class DBService {
     return us;
   }
 
+  Future<bool> update(String collection, obj) async {
+    try {
+      await _instance.doc(collection).update({'block': obj.block});
+      return true;
+    } catch (ex) {
+      print(ex);
+      return false;
+    }
+  }
+
   Future<bool> saveComment({required Comment obj, String id = ''}) async {
     try {
-      if (id == '') {
+      if (id != '') {
         await _instance.doc('comments/$id').set(obj.toJson());
       } else {
         await _instance.collection('comments').add(obj.toJson());

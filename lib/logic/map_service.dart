@@ -32,7 +32,7 @@ class MapService {
         alternativeRoutes: alt
             ? {'target_count': 2, 'share_factor': 0.5, 'weight_factor': 1.5}
             : null,
-        //continueStraight: true,
+        continueStraight: true,
         elevation: true,
         profileOverride: _profile[profile],
         preference: temp,

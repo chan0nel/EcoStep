@@ -18,7 +18,8 @@ class RoutesPage extends StatefulWidget {
 }
 
 class _RoutesPageState extends State<RoutesPage>
-    with AutomaticKeepAliveClientMixin<RoutesPage> {
+//with AutomaticKeepAliveClientMixin<RoutesPage>
+{
   final DBService _service = DBService();
   late Future<List<dynamic>> _com, _mr, _u;
   AuthenticationService auth = AuthenticationService();
@@ -126,7 +127,7 @@ class _RoutesPageState extends State<RoutesPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    //super.build(context);
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -254,6 +255,6 @@ class _RoutesPageState extends State<RoutesPage>
         ));
   }
 
-  @override
-  bool get wantKeepAlive => true;
+  // @override
+  // bool get wantKeepAlive => true;
 }

@@ -10,6 +10,7 @@ class Comment {
     required this.uid,
     required this.routeid,
     required this.text,
+    this.block = const [],
   });
 
   Comment.fromJSON(Map<String, dynamic> json, this.id) {

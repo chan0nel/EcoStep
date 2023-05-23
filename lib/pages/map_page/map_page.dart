@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_init_to_null
 
 import 'package:async_button/async_button.dart';
-import 'package:diplom/logic/map-provider.dart';
+import 'package:diplom/logic/map_provider.dart';
 import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/logic/theme_provider.dart';
 import 'package:diplom/pages/map_page/add_route_tab_view.dart';
@@ -62,15 +62,16 @@ class _MapPageState extends State<MapPage>
                     asyncBtnStatesController: asyncCtrl,
                     style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.primary,
-                        minimumSize: const Size(20, 55),
+                        minimumSize: const Size(15, 55),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15)),
                         shadowColor: Colors.black87,
                         elevation: 3),
                     loadingStyle: AsyncBtnStateStyle(
                         widget: SizedBox(
-                      height: 23,
                       width: 23,
+                      height: 23,
                       child: CircularProgressIndicator(
                         color: Theme.of(context).canvasColor,
                         strokeWidth: 2,
