@@ -5,6 +5,7 @@ import 'package:diplom/logic/map_provider.dart';
 import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/pages/map_page/route_tab.dart';
 import 'package:diplom/widgets/cust_field.dart';
+import 'package:diplom/widgets/cust_text.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
@@ -145,12 +146,12 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MapModel>(
-      builder: (context, value, child) => ListView(
-        padding: const EdgeInsets.all(10),
+    return Consumer<MapModel>(builder: (context, value, child) {
+      return ListView(
         controller: value.scrollController,
+        padding: const EdgeInsets.all(10),
         children: <Widget>[
-          const Text('Точки маршрута:'),
+          const CustText('Точки маршрута:'),
           ListView.builder(
               padding: const EdgeInsets.all(0),
               shrinkWrap: true,
@@ -175,7 +176,7 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
                 child: const Text('Добавить точку'),
               )),
           const SizedBox(height: 10),
-          const Text('Дополнительные параметры:'),
+          const CustText('Дополнительные параметры:'),
           CheckboxListTile(
             contentPadding: const EdgeInsets.all(0),
             controlAffinity: ListTileControlAffinity.leading,
@@ -194,7 +195,7 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
             },
           ),
           option['round'] == 1
-              ? const Text('Предпочтительная длина маршрута:')
+              ? const CustText('Предпочтительная длина маршрута:')
               : const SizedBox.shrink(),
           option['round'] == 1
               ? Slider(
@@ -230,13 +231,13 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
               }
             },
           ),
-          const Text('Тип передвижения:'),
+          const CustText('Тип передвижения:'),
           const SizedBox(height: 10.0),
           _choiceRowChips(profileNames.sublist(0, 3), Icons.pedal_bike),
           _choiceRowChips(profileNames.sublist(3, 5), Icons.directions_walk),
           _choiceRowChips([profileNames[5]], Icons.accessible),
           option['round'] == 0
-              ? const Text('Тип маршрута:')
+              ? const CustText('Тип маршрута:')
               : const SizedBox.shrink(),
           option['round'] == 0
               ? const SizedBox(height: 10.0)
@@ -294,7 +295,7 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
             child: const Text('Составить маршрут'),
           )
         ],
-      ),
-    );
+      );
+    });
   }
 }

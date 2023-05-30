@@ -4,8 +4,10 @@ import 'package:async_button/async_button.dart';
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
+import 'package:diplom/logic/map_provider.dart';
 import 'package:diplom/widgets/atlitude_chart.dart';
 import 'package:diplom/widgets/cust_field.dart';
+import 'package:diplom/widgets/cust_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -38,26 +40,27 @@ class _RouteTabState extends State<RouteTab> {
 
   @override
   Widget build(BuildContext context) {
-    //ScrollController ctrl = Provider.of<MapModel>(context).scrollController;
     return ListView(
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(10),
-      //controller: ctrl,
       primary: false,
+      controller:
+          Provider.of<MapModel>(context, listen: false).scrollController1,
       children: [
-        const Text('Название:'),
+        const CustText('Название:'),
         CustomField(
           ctrl: _controller,
         ),
-        Text('Тип передвижения: ${widget.mp.profile}'),
-        Text('Протяженность: ${widget.mp.distanceCast}'),
-        Text('Время прохождения: ${widget.mp.timeCast}'),
-        const Text('График высот:'),
+        const SizedBox(height: 10),
+        CustText('Тип передвижения: ${widget.mp.profile}'),
+        CustText('Протяженность: ${widget.mp.distanceCast}'),
+        CustText('Время прохождения: ${widget.mp.timeCast}'),
+        const CustText('График высот:'),
         AtlitudeChart(
           data: widget.mp.atlitude,
           distance: widget.mp.distance,
         ),
-        Text('Подъем: ${widget.mp.ascent}'),
-        Text('Спуск: ${widget.mp.descent}'),
+        CustText('Подъем: ${widget.mp.ascent}, спуск: ${widget.mp.descent}'),
         Visibility(
           visible: widget.mp.uid == '',
           child: Consumer<AuthenticationService>(

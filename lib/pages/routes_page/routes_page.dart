@@ -24,6 +24,7 @@ class _RoutesPageState extends State<RoutesPage>
   late Future<List<dynamic>> _com, _mr, _u;
   AuthenticationService auth = AuthenticationService();
   TextEditingController ctrl = TextEditingController();
+  bool upd = false;
   bool search = false;
   String? name = null;
 
@@ -113,79 +114,47 @@ class _RoutesPageState extends State<RoutesPage>
     return map;
   }
 
-  List<Widget> _sliver(widget1, widget2, flag) {
+  List<Widget> _sliver(widget1, widget2, name) {
     return [
-      Visibility(
-        child: widget1,
-        visible: flag,
-        replacement: const SliverToBoxAdapter(),
+      Consumer<ListModel>(
+        builder: (context, value, child) => Visibility(
+          child: widget1,
+          visible: value.map[name].isNotEmpty,
+          replacement: const SliverToBoxAdapter(),
+        ),
       ),
-      Visibility(
-        child: widget2,
-        visible: flag,
-        replacement: const SliverToBoxAdapter(),
-      )
+      Consumer<ListModel>(
+        builder: (context, value, child) => Visibility(
+          child: widget2,
+          visible: value.map[name].isNotEmpty && value.shown[name]!,
+          replacement: const SliverToBoxAdapter(),
+        ),
+      ),
     ];
   }
 
   dynamic _search(Map<String, dynamic> map) {
     if (name == null) return map;
     final mapSearch = Provider.of<ListModel>(context).search;
-    List<String> search = name!.split(',');
-    if (mapSearch['название']) {
-      map.map((key, value) {
-        value.removeWhere((element) {
-          return !element['map']
-              .name
-              .toLowerCase()
-              .contains(search[0].toLowerCase());
-        });
-        return MapEntry(key, value);
-      });
-    }
-    if (mapSearch['пользователь']) {
-      String temp = '';
-      try {
-        temp = !mapSearch['название'] ? search[0].trim() : search[1].trim();
-      } catch (ex) {
-        print(ex);
-      }
-      map.map((key, value) {
-        value.removeWhere((element) {
-          if (element['user'] == null) return true;
-          return !element['user']
-              .name
-              .toLowerCase()
-              .contains(temp.toLowerCase());
-        });
-        return MapEntry(key, value);
-      });
-    }
-    if (mapSearch['тип передвижения']) {
-      String temp = '';
-      try {
-        if (mapSearch['название']) {
-          if (mapSearch['пользователь']) {
-            temp = search[2].trim();
-          } else {
-            temp = search[1].trim();
-          }
-        } else {
-          if (mapSearch['пользователь']) {
-            temp = search[1].trim();
-          } else {
-            temp = search[0].trim();
-          }
+    String search = name!.trim().toLowerCase();
+    map.map((key, value) {
+      value.removeWhere((element) {
+        bool flag1 = mapSearch['название']
+            ? !element['map'].name.toLowerCase().contains(search)
+            : false;
+        bool flag2 = true;
+        if (mapSearch['пользователь'] && element['user'] != null) {
+          flag2 = !element['user'].name.toLowerCase().contains(search);
         }
-      } catch (ex) {
-        print(ex);
-      }
-      map.map((key, value) {
-        value.removeWhere((element) =>
-            !element['map'].profile.toLowerCase().contains(temp.toLowerCase()));
-        return MapEntry(key, value);
+        bool flag3 = mapSearch['тип передвижения']
+            ? !element['map'].profile.toLowerCase().contains(search)
+            : false;
+        return ((mapSearch['название'] == flag1) &&
+            (mapSearch['пользователь'] == flag2) &&
+            (mapSearch['тип передвижения'] == flag3));
       });
-    }
+      return MapEntry(key, value);
+    });
     if (mapSearch['с подъемом'] != mapSearch['со спуском']) {
       if (mapSearch['с подъемом']) {
         map.map((key, value) {
@@ -263,86 +232,87 @@ class _RoutesPageState extends State<RoutesPage>
                 ]
               : null,
         ),
-        body: Consumer<ListModel>(
-          builder: (context, value, child) => FutureBuilder(
-            future: Future.wait([
-              loadComments(),
-              loadMapRoutes(),
-              loadUsers(),
-            ]),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else {
-                final data = snapshot.data ?? [];
-                if (mounted) {
-                  updateCategories(data[0].cast<Comment>(),
-                          data[1].cast<MapRoute>(), data[2].cast<User>())
-                      .forEach((key, val) => value.setMap(key, val));
-                }
-
-                return RefreshIndicator(
-                  onRefresh: refresh,
-                  child: CustomScrollView(
-                    slivers: [
-                      Visibility(
-                        visible: search,
-                        replacement: const SliverToBoxAdapter(),
-                        child: SliverToBoxAdapter(
-                          child: Wrap(
-                            spacing: 2.0,
-                            children: value.search.keys
-                                .map((e) => ChoiceChip(
-                                    onSelected: (val) {
-                                      value.changeSearch(e, val);
-                                    },
-                                    label: Text(e),
-                                    selected: value.search[e]))
-                                .toList(),
-                          ),
+        body: FutureBuilder(
+          future: Future.wait([
+            loadComments(),
+            loadMapRoutes(),
+            loadUsers(),
+          ]),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting && !upd) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            } else {
+              final data = snapshot.data ?? [];
+              upd = true;
+              dynamic temp = updateCategories(data[0].cast<Comment>(),
+                  data[1].cast<MapRoute>(), data[2].cast<User>());
+              Provider.of<ListModel>(context, listen: false).setMap(temp);
+              return RefreshIndicator(
+                onRefresh: refresh,
+                child: CustomScrollView(
+                  slivers: [
+                    Visibility(
+                      visible: search,
+                      replacement: const SliverToBoxAdapter(),
+                      child: SliverToBoxAdapter(
+                          child: Consumer<ListModel>(
+                        builder: (context, value, child) => Wrap(
+                          spacing: 5.0,
+                          children: value.search.keys
+                              .map((e) => ChoiceChip(
+                                  onSelected: (val) {
+                                    value.changeSearch(e, val);
+                                  },
+                                  label: Text(e),
+                                  selected: value.search[e]))
+                              .toList(),
                         ),
-                      ),
-                      ..._sliver(
-                          const SliverHeader(text: 'Ваши маршруты'),
-                          RoutesList(
-                            list: value.map['yours'] ?? [],
-                            update: refresh,
-                            delete: 1,
-                          ),
-                          value.map['yours'].isNotEmpty),
-                      ..._sliver(
-                          const SliverHeader(text: 'Сохранненные маршруты'),
-                          RoutesList(
-                            list: value.map['saves'] ?? [],
-                            update: refresh,
-                            delete: 2,
-                          ),
-                          value.map['saves'].isNotEmpty),
-                      ..._sliver(
-                          const SliverHeader(text: 'Наши маршруты'),
-                          RoutesList(
-                            list: value.map['default'] ?? [],
-                            update: refresh,
-                          ),
-                          value.map['default'].isNotEmpty),
-                      ..._sliver(
-                          const SliverHeader(text: 'Пользовательские маршруты'),
-                          RoutesList(
-                            list: value.map['other'] ?? [],
-                            save: value.map['yours'] != null,
-                            update: refresh,
-                          ),
-                          value.map['other'].isNotEmpty),
-                    ],
-                  ),
-                );
-              }
-            },
-          ),
+                      )),
+                    ),
+                    ..._sliver(
+                        const SliverHeader(
+                            text: 'Ваши маршруты', name: 'yours'),
+                        RoutesList(
+                          name: 'yours',
+                          update: refresh,
+                          delete: 1,
+                        ),
+                        'yours'),
+                    ..._sliver(
+                        const SliverHeader(
+                            text: 'Сохранненные маршруты', name: 'saves'),
+                        RoutesList(
+                          name: 'saves',
+                          update: refresh,
+                          delete: 2,
+                        ),
+                        'saves'),
+                    ..._sliver(
+                        const SliverHeader(
+                            text: 'Наши маршруты', name: 'default'),
+                        RoutesList(
+                          name: 'default',
+                          update: refresh,
+                        ),
+                        'default'),
+                    ..._sliver(
+                        const SliverHeader(
+                            text: 'Пользовательские маршруты', name: 'other'),
+                        RoutesList(
+                          name: 'other',
+                          save: !AuthenticationService().isAnonymous,
+                          update: refresh,
+                        ),
+                        'other'),
+                  ],
+                ),
+              );
+            }
+          },
         ));
   }
 

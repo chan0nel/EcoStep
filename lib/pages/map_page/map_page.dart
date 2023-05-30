@@ -180,6 +180,7 @@ class _MapPageState extends State<MapPage>
               ),
               panelBuilder: (ScrollController sc) {
                 value.scrollController = sc;
+                value.scrollController1 = sc;
                 return Column(
                   children: [
                     Container(
@@ -194,7 +195,11 @@ class _MapPageState extends State<MapPage>
                       ),
                     ),
                     TabBar(
+                      physics: const NeverScrollableScrollPhysics(),
                       onTap: (idx) {
+                        // if (_tabController.previousIndex == idx) {
+                        //   _tabController.animateTo(idx);
+                        // }
                         if (idx > 0) {
                           setState(() {
                             viewPolyline = value.viewPolylines[idx - 1];
@@ -210,11 +215,10 @@ class _MapPageState extends State<MapPage>
                     ),
                     Expanded(
                       child: ExtendedTabBarView(
-                        physics: const NeverScrollableClampingScrollPhysics(),
+                        link: false,
+                        physics: const NeverScrollableScrollPhysics(),
                         controller: _tabController,
                         children: _tabs['tab-view'].cast<Widget>(),
-                        shouldIgnorePointerWhenScrolling: false,
-                        cacheExtent: 2,
                       ),
                     )
                   ],

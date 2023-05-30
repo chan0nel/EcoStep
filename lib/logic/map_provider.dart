@@ -19,6 +19,7 @@ class MapModel extends ChangeNotifier {
   final MapController mapController = MapController();
   final PanelController panelController = PanelController();
   ScrollController scrollController = ScrollController();
+  ScrollController scrollController1 = ScrollController();
   PageController pageController = PageController();
   final Map<String, dynamic> _states = {
     'editPoint': null,
@@ -197,8 +198,8 @@ class MapModel extends ChangeNotifier {
     _tabs['tab-view'].clear();
     _points.clear();
     _points.addAll([
-      {'ctrl': TextEditingController(), 'point': null},
-      {'ctrl': TextEditingController(), 'point': null}
+      {'ctrl': TextEditingController(), 'point': null, 'search': {}},
+      {'ctrl': TextEditingController(), 'point': null, 'search': {}}
     ]);
     _states['editPoint'] = null;
     _polylines.clear();

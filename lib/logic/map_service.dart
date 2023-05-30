@@ -115,7 +115,7 @@ class MapService {
       final searchPoints = List.from(jsonDecode(response.body)['features']);
       return {
         for (var v in searchPoints)
-          '${v['properties']['name']}, ${v['properties']['country'] == 'Белоруссия' ? 'Беларусь' : v['properties']['country']}':
+          '${v['properties']['name']} ${(v['properties']['country'] == 'Белоруссия' ? 'Беларусь' : v['properties']['country']) ?? ''}':
               LatLng(v['geometry']['coordinates'][1],
                   v['geometry']['coordinates'][0])
       };

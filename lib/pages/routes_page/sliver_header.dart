@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'package:diplom/logic/list_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate({
@@ -30,14 +32,15 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
 
 class SliverHeader extends StatelessWidget {
   final String text;
-  const SliverHeader({super.key, required this.text});
+  final String name;
+  const SliverHeader({super.key, required this.text, required this.name});
 
   @override
   Widget build(BuildContext context) {
     return SliverPersistentHeader(
       pinned: true,
       delegate: _SliverAppBarDelegate(
-        minHeight: 30.0,
+        minHeight: 35.0,
         maxHeight: 60.0,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -52,8 +55,26 @@ class SliverHeader extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(text),
-              // TextButton(onPressed: () {}, child: const Text('Показать все'))
+              Text(
+                text,
+                style: const TextStyle(
+                    fontSize: 15,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w500),
+              ),
+              IconButton(
+                onPressed: () {
+                  Provider.of<ListModel>(context, listen: false)
+                      .changeShown(name);
+                },
+                icon: Consumer<ListModel>(
+                  builder: (context, value, child) {
+                    return value.shown[name] == true
+                        ? const Icon(Icons.arrow_drop_up)
+                        : const Icon(Icons.arrow_drop_down);
+                  },
+                ),
+              )
             ],
           ),
         ),

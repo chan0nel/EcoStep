@@ -9,10 +9,6 @@ class ListModel extends ChangeNotifier {
   final Map<String, bool> _mapSearch = {
     'название': true,
     'пользователь': false,
-    // 'протяженность от': false,
-    // 'протяженность до': false,
-    // 'продолжительность от': false,
-    // 'продолжительность до': false,
     'тип передвижения': false,
     'с подъемом': false,
     'со спуском': false,
@@ -20,9 +16,16 @@ class ListModel extends ChangeNotifier {
 
   final Map<String, dynamic> _map = {
     'yours': [],
-    'saved': [],
+    'saves': [],
     'default': [],
     'other': []
+  };
+
+  final Map<String, bool> shown = {
+    'yours': true,
+    'saves': true,
+    'default': true,
+    'other': true
   };
 
   UnmodifiableMapView<String, dynamic> get search =>
@@ -41,9 +44,16 @@ class ListModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setMap(key, val) {
-    _map[key] = val;
+  void changeShown(name) {
+    shown[name] = !shown[name]!;
     notifyListeners();
+  }
+
+  void setMap(mapp) {
+    mapp.forEach(
+      (key, value) => _map[key] = value,
+    );
+    //notifyListeners();
   }
 
   void clearMap(key, val) {
