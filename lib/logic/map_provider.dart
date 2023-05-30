@@ -13,8 +13,8 @@ class MapModel extends ChangeNotifier {
   final List<Polyline> _polylines = [];
   final List<Polyline> _viewPolylines = [];
   final List<Map<String, dynamic>> _points = [
-    {'ctrl': TextEditingController(), 'point': null},
-    {'ctrl': TextEditingController(), 'point': null}
+    {'ctrl': TextEditingController(), 'point': null, 'search': {}},
+    {'ctrl': TextEditingController(), 'point': null, 'search': {}}
   ];
   final MapController mapController = MapController();
   final PanelController panelController = PanelController();
@@ -102,9 +102,18 @@ class MapModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setSearchPoint(index, s) {
+    _points[index]['search'] = s;
+    if (s.isEmpty) {
+      _points[index]['point'] = null;
+      _points[index]['ctrl'].text = '';
+    }
+    notifyListeners();
+  }
+
   void addCtrl() {
-    _points.insert(
-        _points.length - 1, {'ctrl': TextEditingController(), 'point': null});
+    _points.insert(_points.length - 1,
+        {'ctrl': TextEditingController(), 'point': null, 'search': {}});
     notifyListeners();
   }
 
@@ -116,6 +125,12 @@ class MapModel extends ChangeNotifier {
   void addPoint(LatLng value, int index) async {
     _points[index]['point'] = value;
     _points[index]['ctrl'].text = await MapService().reverseSearch(value);
+    notifyListeners();
+  }
+
+  void addPoint2(LatLng value, int index, String text) async {
+    _points[index]['point'] = value;
+    _points[index]['ctrl'].text = text;
     notifyListeners();
   }
 

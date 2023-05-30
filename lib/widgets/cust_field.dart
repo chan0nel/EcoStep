@@ -5,15 +5,17 @@ class CustomField extends StatefulWidget {
   final TextEditingController? ctrl;
   final String? hintText;
   final bool custStyle;
+  final int index;
   final TextInputType type;
-  final bool onSubm;
+  final Function? onSubm;
   const CustomField(
       {super.key,
       this.ctrl = null,
       this.custStyle = false,
       this.hintText = null,
       this.type = TextInputType.text,
-      this.onSubm = false});
+      this.onSubm = null,
+      this.index = -1});
 
   @override
   State<CustomField> createState() => _CustomFieldState();
@@ -49,7 +51,12 @@ class _CustomFieldState extends State<CustomField> {
       textAlignVertical: TextAlignVertical.bottom,
       decoration: InputDecoration(hintText: widget.hintText),
       style: style,
-      enabled: !widget.onSubm,
+      onSubmitted: (text) {
+        if (widget.onSubm != null) {
+          widget.onSubm!(text, widget.index);
+        }
+      },
+      //enabled: !widget.onSubm,
       onChanged: (value) {
         if (widget.type == TextInputType.emailAddress) email(value);
       },

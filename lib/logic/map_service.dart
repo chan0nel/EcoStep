@@ -1,8 +1,12 @@
 // ignore_for_file: file_names, avoid_print
+import 'dart:convert';
+
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:open_route_service/open_route_service.dart';
 import 'package:geolocator/geolocator.dart';
+
+import 'package:http/http.dart' as http;
 
 class MapService {
   final List<ORSProfile> _profile = [
@@ -75,17 +79,49 @@ class MapService {
     LatLng point,
   ) async {
     try {
-      final searchPoints = await _ors.geocodeReverseGet(
-          point: ORSCoordinate(
-            latitude: point.latitude,
-            longitude: point.longitude,
-          ),
-          size: 1,
-          layers: ['venue', 'address', 'neighbourhood']);
-      return searchPoints.features[0].properties['name'];
+      final url = Uri.https('api.openrouteservice.org', '/geocode/reverse', {
+        'api_key': '5b3ce3597851110001cf624834db9092e45f491c90ae6a9920f89d57',
+        'point.lon': point.longitude.toString(),
+        'point.lat': point.latitude.toString(),
+        'size': '1',
+        'layers': 'venue,neighbourhood',
+        'lang': 'ru',
+      });
+      final response = await http.get(url);
+      final searchPoint =
+          jsonDecode(response.body)['features'][0]['properties'];
+      return searchPoint['label']
+          .split(', ')
+          .map((e) => e == 'Белоруссия' ? 'Беларусь' : e)
+          .join(', ');
     } catch (e) {
       print('OSR ERROR3: $e');
       return '';
+    }
+  }
+
+  Future<Map<String, dynamic>> search(
+    String text,
+  ) async {
+    try {
+      final url =
+          Uri.https('api.openrouteservice.org', '/geocode/autocomplete', {
+        'api_key': '5b3ce3597851110001cf624834db9092e45f491c90ae6a9920f89d57',
+        'text': text,
+        'layers': 'venue,neighbourhood',
+        'lang': 'ru',
+      });
+      final response = await http.get(url);
+      final searchPoints = List.from(jsonDecode(response.body)['features']);
+      return {
+        for (var v in searchPoints)
+          '${v['properties']['name']}, ${v['properties']['country'] == 'Белоруссия' ? 'Беларусь' : v['properties']['country']}':
+              LatLng(v['geometry']['coordinates'][1],
+                  v['geometry']['coordinates'][0])
+      };
+    } catch (e) {
+      print('OSR ERROR4: $e');
+      return {};
     }
   }
 

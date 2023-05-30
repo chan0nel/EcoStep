@@ -5,6 +5,7 @@ import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/logic/database/user.dart';
+import 'package:diplom/logic/list_provider.dart';
 import 'package:diplom/pages/routes_page/routes_list.dart';
 import 'package:diplom/pages/routes_page/sliver_header.dart';
 import 'package:flutter/material.dart';
@@ -18,8 +19,7 @@ class RoutesPage extends StatefulWidget {
 }
 
 class _RoutesPageState extends State<RoutesPage>
-//with AutomaticKeepAliveClientMixin<RoutesPage>
-{
+    with AutomaticKeepAliveClientMixin<RoutesPage> {
   final DBService _service = DBService();
   late Future<List<dynamic>> _com, _mr, _u;
   AuthenticationService auth = AuthenticationService();
@@ -107,6 +107,9 @@ class _RoutesPageState extends State<RoutesPage>
         'user': u.firstWhere((el) => el.uid == element.uid)
       });
     }
+    if (search) {
+      map = _search(map);
+    }
     return map;
   }
 
@@ -125,9 +128,87 @@ class _RoutesPageState extends State<RoutesPage>
     ];
   }
 
+  dynamic _search(Map<String, dynamic> map) {
+    if (name == null) return map;
+    final mapSearch = Provider.of<ListModel>(context).search;
+    List<String> search = name!.split(',');
+    if (mapSearch['название']) {
+      map.map((key, value) {
+        value.removeWhere((element) {
+          return !element['map']
+              .name
+              .toLowerCase()
+              .contains(search[0].toLowerCase());
+        });
+        return MapEntry(key, value);
+      });
+    }
+    if (mapSearch['пользователь']) {
+      String temp = '';
+      try {
+        temp = !mapSearch['название'] ? search[0].trim() : search[1].trim();
+      } catch (ex) {
+        print(ex);
+      }
+      map.map((key, value) {
+        value.removeWhere((element) {
+          if (element['user'] == null) return true;
+          return !element['user']
+              .name
+              .toLowerCase()
+              .contains(temp.toLowerCase());
+        });
+        return MapEntry(key, value);
+      });
+    }
+    if (mapSearch['тип передвижения']) {
+      String temp = '';
+      try {
+        if (mapSearch['название']) {
+          if (mapSearch['пользователь']) {
+            temp = search[2].trim();
+          } else {
+            temp = search[1].trim();
+          }
+        } else {
+          if (mapSearch['пользователь']) {
+            temp = search[1].trim();
+          } else {
+            temp = search[0].trim();
+          }
+        }
+      } catch (ex) {
+        print(ex);
+      }
+      map.map((key, value) {
+        value.removeWhere((element) =>
+            !element['map'].profile.toLowerCase().contains(temp.toLowerCase()));
+        return MapEntry(key, value);
+      });
+    }
+    if (mapSearch['с подъемом'] != mapSearch['со спуском']) {
+      if (mapSearch['с подъемом']) {
+        map.map((key, value) {
+          value.removeWhere((element) {
+            return (element['map'].ascent <= element['map'].descent) == true;
+          });
+          return MapEntry(key, value);
+        });
+      }
+      if (mapSearch['со спуском']) {
+        map.map((key, value) {
+          value.removeWhere((element) =>
+              (element['map'].ascent > element['map'].descent) == true);
+          return MapEntry(key, value);
+        });
+      }
+    }
+    return map;
+  }
+
   @override
   Widget build(BuildContext context) {
-    //super.build(context);
+    super.build(context);
     return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -182,79 +263,89 @@ class _RoutesPageState extends State<RoutesPage>
                 ]
               : null,
         ),
-        body: FutureBuilder(
-          future: Future.wait([
-            loadComments(),
-            loadMapRoutes(),
-            loadUsers(),
-          ]),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error}');
-            } else {
-              final data = snapshot.data ?? [];
-              Map<String, dynamic> map = updateCategories(
-                  data[0].cast<Comment>(),
-                  data[1].cast<MapRoute>(),
-                  data[2].cast<User>());
-              return RefreshIndicator(
-                onRefresh: refresh,
-                child: CustomScrollView(
-                  slivers: [
-                    // search
-                    //     ? SliverToBoxAdapter(
-                    //         child: Wrap(
-                    //           children: ['название', 'пользователь']
-                    //               .map((e) => ChoiceChip(
-                    //                   label: Text(e),
-                    //                   selected: list.contains(e)))
-                    //               .toList(),
-                    //         ),
-                    //       )
-                    //     : const SliverToBoxAdapter(),
-                    ..._sliver(
-                        const SliverHeader(text: 'Ваши маршруты'),
-                        RoutesList(
-                          list: map['yours'] ?? [],
-                          update: refresh,
-                          delete: 1,
+        body: Consumer<ListModel>(
+          builder: (context, value, child) => FutureBuilder(
+            future: Future.wait([
+              loadComments(),
+              loadMapRoutes(),
+              loadUsers(),
+            ]),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                final data = snapshot.data ?? [];
+                if (mounted) {
+                  updateCategories(data[0].cast<Comment>(),
+                          data[1].cast<MapRoute>(), data[2].cast<User>())
+                      .forEach((key, val) => value.setMap(key, val));
+                }
+
+                return RefreshIndicator(
+                  onRefresh: refresh,
+                  child: CustomScrollView(
+                    slivers: [
+                      Visibility(
+                        visible: search,
+                        replacement: const SliverToBoxAdapter(),
+                        child: SliverToBoxAdapter(
+                          child: Wrap(
+                            spacing: 2.0,
+                            children: value.search.keys
+                                .map((e) => ChoiceChip(
+                                    onSelected: (val) {
+                                      value.changeSearch(e, val);
+                                    },
+                                    label: Text(e),
+                                    selected: value.search[e]))
+                                .toList(),
+                          ),
                         ),
-                        map['yours'].isNotEmpty),
-                    ..._sliver(
-                        const SliverHeader(text: 'Сохранненные маршруты'),
-                        RoutesList(
-                          list: map['saves'] ?? [],
-                          update: refresh,
-                          delete: 2,
-                        ),
-                        map['saves'].isNotEmpty),
-                    ..._sliver(
-                        const SliverHeader(text: 'Наши маршруты'),
-                        RoutesList(
-                          list: map['default'] ?? [],
-                          update: refresh,
-                        ),
-                        map['default'].isNotEmpty),
-                    ..._sliver(
-                        const SliverHeader(text: 'Пользовательские маршруты'),
-                        RoutesList(
-                          list: map['other'] ?? [],
-                          save: map['yours'] != null,
-                          update: refresh,
-                        ),
-                        map['other'].isNotEmpty),
-                  ],
-                ),
-              );
-            }
-          },
+                      ),
+                      ..._sliver(
+                          const SliverHeader(text: 'Ваши маршруты'),
+                          RoutesList(
+                            list: value.map['yours'] ?? [],
+                            update: refresh,
+                            delete: 1,
+                          ),
+                          value.map['yours'].isNotEmpty),
+                      ..._sliver(
+                          const SliverHeader(text: 'Сохранненные маршруты'),
+                          RoutesList(
+                            list: value.map['saves'] ?? [],
+                            update: refresh,
+                            delete: 2,
+                          ),
+                          value.map['saves'].isNotEmpty),
+                      ..._sliver(
+                          const SliverHeader(text: 'Наши маршруты'),
+                          RoutesList(
+                            list: value.map['default'] ?? [],
+                            update: refresh,
+                          ),
+                          value.map['default'].isNotEmpty),
+                      ..._sliver(
+                          const SliverHeader(text: 'Пользовательские маршруты'),
+                          RoutesList(
+                            list: value.map['other'] ?? [],
+                            save: value.map['yours'] != null,
+                            update: refresh,
+                          ),
+                          value.map['other'].isNotEmpty),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
         ));
   }
 
-  // @override
-  // bool get wantKeepAlive => true;
+  @override
+  bool get wantKeepAlive => true;
 }

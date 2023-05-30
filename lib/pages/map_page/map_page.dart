@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_init_to_null
 
 import 'package:async_button/async_button.dart';
+import 'package:diplom/logic/list_provider.dart';
 import 'package:diplom/logic/map_provider.dart';
 import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/logic/theme_provider.dart';
@@ -25,7 +26,6 @@ class _MapPageState extends State<MapPage>
     with AutomaticKeepAliveClientMixin<MapPage>, TickerProviderStateMixin {
   AsyncBtnStatesController asyncCtrl = AsyncBtnStatesController();
   late TabController _tabController;
-  final PanelController _panelController = PanelController();
   Polyline viewPolyline = Polyline(points: []);
   Map<String, dynamic> _tabs = {'tab': [], 'tab-view': []};
   bool change = false;
@@ -50,11 +50,11 @@ class _MapPageState extends State<MapPage>
     super.build(context);
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      floatingActionButton: Consumer<MapModel>(
-        builder: (context, value, child) {
+      floatingActionButton: Consumer2<MapModel, ListModel>(
+        builder: (context, value, value2, child) {
           return Visibility(
-              visible: _panelController.isPanelClosed &&
-                  value.panelController.isPanelClosed,
+              visible: value.panelController.isPanelClosed &&
+                  value2.panelController.isPanelClosed,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -107,7 +107,7 @@ class _MapPageState extends State<MapPage>
                       value.addTab('Составить маршрут',
                           AddRouteTabView(upd: _updateTabs));
                       _updateTabs();
-                      await _panelController.open();
+                      await value.panelController.open();
                     },
                     heroTag: null,
                     child: const Icon(Icons.add),
@@ -155,12 +155,12 @@ class _MapPageState extends State<MapPage>
                   ? value2.theme.colorScheme.background
                   : Colors.white,
               onPanelOpened: () async {
-                await _panelController.animatePanelToPosition(1);
+                await value.panelController.animatePanelToPosition(1);
                 _updateTabs();
               },
               onPanelSlide: (position) {
-                if (position == 0 && _panelController.isPanelAnimating) {
-                  _panelController.close();
+                if (position == 0 && value.panelController.isPanelAnimating) {
+                  value.panelController.close();
                 }
               },
               onPanelClosed: () {
@@ -172,7 +172,7 @@ class _MapPageState extends State<MapPage>
                 _updateTabs();
               },
               snapPoint: 0.3,
-              controller: _panelController,
+              controller: value.panelController,
               minHeight: 0,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(24.0),
@@ -222,7 +222,7 @@ class _MapPageState extends State<MapPage>
               },
             ),
           ),
-          Consumer2<MapModel, ThemeProvider>(
+          Consumer2<ListModel, ThemeProvider>(
             builder: (context, value, value2, child) => SlidingUpPanel(
                 color: !value2.curTheme
                     ? value2.theme.colorScheme.background
@@ -251,7 +251,7 @@ class _MapPageState extends State<MapPage>
                     viewPolyline = Polyline(points: []);
                     change = false;
                   });
-                  value.clearPolyline();
+                  Provider.of<MapModel>(context, listen: false).clearPolyline();
                 },
                 maxHeight: MediaQuery.of(context).size.height,
                 snapPoint: 0.4,

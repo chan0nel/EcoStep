@@ -6,8 +6,10 @@ import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/pages/map_page/route_tab.dart';
 import 'package:diplom/widgets/cust_field.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:async_button/async_button.dart';
+import 'package:dropdown_textfield/dropdown_textfield.dart';
 
 class AddRouteTabView extends StatefulWidget {
   final Function upd;
@@ -36,6 +38,11 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
     'alt': 0
   };
 
+  void searchSubmit(text, index) async {
+    final s = await MapService().search(text);
+    Provider.of<MapModel>(context, listen: false).setSearchPoint(index, s);
+  }
+
   Widget _PointField(int index, bool del) {
     final row = Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -49,25 +56,51 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
           ),
         ),
         Flexible(
-          child: Consumer<MapModel>(
-            builder: (context, value, child) => CustomField(
-              ctrl: value.points[index]['ctrl'],
-              onSubm: true,
-            ),
-          ),
+          child: Consumer<MapModel>(builder: (context, value, child) {
+            String text = value.points[index]['ctrl'].text;
+            return value.points[index]['search'].isEmpty
+                ? CustomField(
+                    ctrl: value.points[index]['ctrl'],
+                    onSubm: searchSubmit,
+                    index: index,
+                  )
+                : DropDownTextField(
+                    dropdownRadius: 5,
+                    initialValue: value.points[index]['ctrl'].text,
+                    textFieldDecoration: InputDecoration(hintText: text),
+                    padding: const EdgeInsets.all(10),
+                    listTextStyle: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black),
+                    onChanged: (v) {
+                      if (v == '') {
+                        value.setSearchPoint(index, {});
+                        return;
+                      }
+                      if (v.value is LatLng) {
+                        value.addPoint2(v.value, index, v.name);
+                        value.mapController.move(v.value, 12);
+                      }
+                    },
+                    dropDownItemCount: 4,
+                    dropDownList: value.points[index]['search'].entries
+                        .map((e) =>
+                            DropDownValueModel(name: e.key, value: e.value))
+                        .toList()
+                        .cast<DropDownValueModel>());
+          }),
         ),
-        del
-            ? Consumer<MapModel>(
-                builder: (context, value, child) => IconButton(
-                  onPressed: () {
-                    value.removeCtrl(index);
-                  },
-                  icon: const Icon(Icons.wrong_location),
-                ),
-              )
-            : SizedBox.fromSize(
-                size: const Size(50, 0),
+        Visibility(
+            visible: del,
+            child: Consumer<MapModel>(
+              builder: (context, value, child) => IconButton(
+                onPressed: () {
+                  value.removeCtrl(index);
+                },
+                icon: const Icon(Icons.wrong_location),
               ),
+            )),
       ],
     );
     return row;
@@ -87,6 +120,7 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
         (index) => icon != null && index == 0
             ? Icon(icon, size: 20)
             : ChoiceChip(
+                padding: const EdgeInsets.all(3),
                 label: Text(list[index]),
                 selected: icon != null
                     ? option['profile'] == profileNames.indexOf(list[index])
@@ -118,6 +152,7 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
         children: <Widget>[
           const Text('Точки маршрута:'),
           ListView.builder(
+              padding: const EdgeInsets.all(0),
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: value.points.length,
@@ -129,14 +164,16 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
                         index < value.points.length - 1);
               })),
           const SizedBox(height: 10),
-          value.points.length < 5 && option['alt'] == 0 && option['round'] == 0
-              ? ElevatedButton(
-                  onPressed: () {
-                    value.addCtrl();
-                  },
-                  child: const Text('Добавить точку'),
-                )
-              : const SizedBox.shrink(),
+          Visibility(
+              visible: value.points.length < 5 &&
+                  option['alt'] == 0 &&
+                  option['round'] == 0,
+              child: ElevatedButton(
+                onPressed: () {
+                  value.addCtrl();
+                },
+                child: const Text('Добавить точку'),
+              )),
           const SizedBox(height: 10),
           const Text('Дополнительные параметры:'),
           CheckboxListTile(
@@ -250,6 +287,7 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
                   value.addTab(lis[i].name, RouteTab(mp: lis[i]));
                   widget.upd();
                 }
+                value.mapController.move(lis[0].bbox.center, 12);
               }
               asyncCtrl.update(AsyncBtnState.idle);
             },

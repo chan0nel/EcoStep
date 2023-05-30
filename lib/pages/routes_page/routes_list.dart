@@ -1,10 +1,11 @@
-// ignore_for_file: unused_import
+// ignore_for_file: unused_import, use_build_context_synchronously
 
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/logic/database/user.dart';
+import 'package:diplom/logic/list_provider.dart';
 import 'package:diplom/logic/map_provider.dart';
 import 'package:diplom/logic/theme_provider.dart';
 import 'package:diplom/widgets/confirm_dialog.dart';
@@ -41,29 +42,33 @@ class _RoutesListState extends State<RoutesList> {
           User? user = widget.list[index]['user'];
           List<Comment>? com = widget.list[index]['comment'];
           return ExpansionTile(
-            tilePadding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-            leading: IconButton(
-                onPressed: () async {
-                  if (mr.block.contains(AuthenticationService().uid)) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text('Вы уже пожаловались на данный маршрут'),
-                    ));
-                  } else {
-                    final res = await showDialog(
-                      context: context,
-                      builder: (context) => ConfirmDialog(
-                          opt: 'пожаловаться на маршрут \'${mr.name}\''),
-                    );
-                    if (res) {
-                      mr.block.add(AuthenticationService().uid);
-                      await DBService().update('map-routes/${mr.id}', mr);
-                      if (mr.block.length >= 5) {
-                        widget.update();
+            tilePadding:
+                user != null ? const EdgeInsets.fromLTRB(0, 0, 10, 0) : null,
+            leading: Visibility(
+              visible: user != null,
+              child: IconButton(
+                  onPressed: () async {
+                    if (mr.block.contains(AuthenticationService().uid)) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Вы уже пожаловались на данный маршрут'),
+                      ));
+                    } else {
+                      final res = await showDialog(
+                        context: context,
+                        builder: (context) => ConfirmDialog(
+                            opt: 'пожаловаться на маршрут \'${mr.name}\''),
+                      );
+                      if (res) {
+                        mr.block.add(AuthenticationService().uid);
+                        await DBService().update('map-routes/${mr.id}', mr);
+                        if (mr.block.length >= 5) {
+                          widget.update();
+                        }
                       }
                     }
-                  }
-                },
-                icon: const Icon(Icons.block)),
+                  },
+                  icon: const Icon(Icons.block)),
+            ),
             title: Text(mr.name),
             subtitle: Row(children: [
               Visibility(
@@ -192,12 +197,15 @@ class _RoutesListState extends State<RoutesList> {
                           '${mr.descent.toString()}',
                           maxLines: 2,
                         ),
-                        Consumer<MapModel>(
-                          builder: (context, value, child) {
+                        Consumer2<ListModel, MapModel>(
+                          builder: (context, value, value2, child) {
                             return ElevatedButton(
                                 onPressed: () async {
-                                  value.changeRoute(widget.list[index]);
-                                  await value.pageController.animateToPage(0,
+                                  value2.changeRoute(widget.list[index]);
+                                  if (value2.panelController.isPanelOpen) {
+                                    await value2.panelController.close();
+                                  }
+                                  await value2.pageController.animateToPage(0,
                                       duration:
                                           const Duration(milliseconds: 100),
                                       curve: Curves.bounceIn);
@@ -208,7 +216,7 @@ class _RoutesListState extends State<RoutesList> {
                                       borderStrokeWidth:
                                           mr.polyline.borderStrokeWidth,
                                       strokeWidth: mr.polyline.strokeWidth);
-                                  value.addPolyline(pl, mr.accentPolyline);
+                                  value2.addPolyline(pl, mr.accentPolyline);
                                   await value.panelController
                                       .animatePanelToSnapPoint(
                                           duration: const Duration(
