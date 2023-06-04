@@ -5,7 +5,7 @@ import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/logic/database/user.dart';
-import 'package:diplom/logic/list_provider.dart';
+import 'package:diplom/logic/provider/list_provider.dart';
 import 'package:diplom/pages/routes_page/routes_list.dart';
 import 'package:diplom/pages/routes_page/sliver_header.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +55,7 @@ class _RoutesPageState extends State<RoutesPage>
 
   Future<void> refresh() async {
     setState(() {
+      upd = true;
       _com = loadComments();
       _mr = loadMapRoutes();
       _u = loadUsers();
@@ -142,9 +143,11 @@ class _RoutesPageState extends State<RoutesPage>
         bool flag1 = mapSearch['название']
             ? !element['map'].name.toLowerCase().contains(search)
             : false;
-        bool flag2 = true;
-        if (mapSearch['пользователь'] && element['user'] != null) {
-          flag2 = !element['user'].name.toLowerCase().contains(search);
+        bool flag2 = false;
+        if (mapSearch['пользователь']) {
+          flag2 = element['user'] != null
+              ? !element['user'].name.toLowerCase().contains(search)
+              : true;
         }
         bool flag3 = mapSearch['тип передвижения']
             ? !element['map'].profile.toLowerCase().contains(search)
@@ -239,6 +242,9 @@ class _RoutesPageState extends State<RoutesPage>
             loadUsers(),
           ]),
           builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              upd = false;
+            }
             if (snapshot.connectionState == ConnectionState.waiting && !upd) {
               return const Center(
                 child: CircularProgressIndicator(),

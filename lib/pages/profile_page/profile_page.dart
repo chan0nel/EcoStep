@@ -6,10 +6,11 @@ import 'package:diplom/logic/database/user.dart';
 import 'package:diplom/pages/auth_page/auth_page.dart';
 import 'package:diplom/widgets/confirm_dialog.dart';
 import 'package:diplom/widgets/cust_field.dart';
+import 'package:diplom/widgets/cust_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../logic/theme_provider.dart';
+import '../../logic/provider/theme_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -154,6 +155,28 @@ class _ProfilePageState extends State<ProfilePage> {
                         );
                       },
                     ),
+                    const Divider(
+                      height: 30,
+                      color: Colors.black38,
+                      indent: 20,
+                      endIndent: 20,
+                    ),
+                    TextButton(
+                        onPressed: () async {},
+                        child: const CustText(
+                          'Справка',
+                        )),
+                    const Divider(
+                      height: 30,
+                      color: Colors.black38,
+                      indent: 20,
+                      endIndent: 20,
+                    ),
+                    TextButton(
+                        onPressed: () async {},
+                        child: const CustText(
+                          'О приложении',
+                        )),
                   ],
                 ),
               ));
@@ -194,52 +217,86 @@ class _ProfilePageState extends State<ProfilePage> {
                             )
                           ]),
                     ),
-                    !value.isVerified
-                        ? const Text(
-                            'Аккаунт не верифицирован',
-                            style: TextStyle(fontSize: 20),
-                          )
-                        : const SizedBox.shrink(),
-                    !value.isVerified
-                        ? ElevatedButton(
+                    ListView(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        Visibility(
+                            visible: !value.isVerified,
+                            child: const CustText('Аккаунт не верифицирован')),
+                        Visibility(
+                          visible: !value.isVerified,
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                await value.verificate();
+                              },
+                              child: const Text('Верифицировать')),
+                        ),
+                        const Divider(
+                          height: 30,
+                          color: Colors.black38,
+                          indent: 20,
+                          endIndent: 20,
+                        ),
+                        TextButton(
                             onPressed: () async {
-                              await value.verificate();
+                              await value.resetPass();
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(
+                                      'Письмо на смену пароля отправлено: ${value.user!.email}')));
                             },
-                            child: const Text('Верифицировать'))
-                        : const SizedBox.shrink(),
-                    SizedBox.fromSize(size: const Size.fromHeight(10)),
-                    TextButton(
-                        onPressed: () async {
-                          await value.resetPass();
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text(
-                                  'Письмо на смену пароля отправлено: ${value.user!.email}')));
-                        },
-                        child: const Text(
-                          'Поменять пароль',
-                          style: TextStyle(fontSize: 18),
-                        )),
-                    SizedBox.fromSize(size: const Size.fromHeight(10)),
-                    Container(
-                      height: 40,
-                      width: 75,
-                      alignment: Alignment.center,
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white),
-                          onPressed: () async {
-                            final res = await showDialog(
-                                context: context,
-                                builder: (context) =>
-                                    const ConfirmDialog(opt: 'выйти'));
-                            if (res) {
-                              await value.signOut();
-                              _update();
-                            }
-                          },
-                          child: const Text('Выйти')),
-                    )
+                            child: const CustText(
+                              'Поменять пароль',
+                            )),
+                        const Divider(
+                          height: 30,
+                          color: Colors.black38,
+                          indent: 20,
+                          endIndent: 20,
+                        ),
+                        TextButton(
+                            onPressed: () async {},
+                            child: const CustText(
+                              'Справка',
+                            )),
+                        const Divider(
+                          height: 30,
+                          color: Colors.black38,
+                          indent: 20,
+                          endIndent: 20,
+                        ),
+                        TextButton(
+                            onPressed: () async {},
+                            child: const CustText(
+                              'О приложении',
+                            )),
+                        const Divider(
+                          height: 30,
+                          color: Colors.black38,
+                          indent: 20,
+                          endIndent: 20,
+                        ),
+                        Container(
+                            height: 40,
+                            width: 75,
+                            alignment: Alignment.center,
+                            child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red,
+                                    foregroundColor: Colors.white),
+                                onPressed: () async {
+                                  final res = await showDialog(
+                                      context: context,
+                                      builder: (context) =>
+                                          const ConfirmDialog(opt: 'выйти'));
+                                  if (res) {
+                                    await value.signOut();
+                                    _update();
+                                  }
+                                },
+                                child: const Text('Выйти'))),
+                      ],
+                    ),
                   ]),
                 );
               });

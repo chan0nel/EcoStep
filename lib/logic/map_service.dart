@@ -27,10 +27,8 @@ class MapService {
     bool alt = false,
   }) async {
     try {
-      print('profile: $profile');
       String temp = preference == 0 ? 'recommended' : 'shortest';
       final routeJSON = await _ors.directionsMultiRouteGeoJsonPost(
-        language: 'ru',
         instructions: false,
         coordinates: points,
         alternativeRoutes: alt

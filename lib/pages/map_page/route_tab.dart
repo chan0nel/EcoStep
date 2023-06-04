@@ -4,7 +4,7 @@ import 'package:async_button/async_button.dart';
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
-import 'package:diplom/logic/map_provider.dart';
+import 'package:diplom/logic/provider/map_provider.dart';
 import 'package:diplom/widgets/atlitude_chart.dart';
 import 'package:diplom/widgets/cust_field.dart';
 import 'package:diplom/widgets/cust_text.dart';

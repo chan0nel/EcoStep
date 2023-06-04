@@ -28,9 +28,24 @@ class ListModel extends ChangeNotifier {
     'other': true
   };
 
+  final List<dynamic> _seemore = [];
+
   UnmodifiableMapView<String, dynamic> get search =>
       UnmodifiableMapView(_mapSearch);
   UnmodifiableMapView<String, dynamic> get map => UnmodifiableMapView(_map);
+  UnmodifiableListView<dynamic> get seemore => UnmodifiableListView(_seemore);
+
+  void changeRoute(key, value) {
+    _seemore.clear();
+    _seemore.add(key);
+    _seemore.add(value);
+    notifyListeners();
+  }
+
+  void addComment(text) {
+    _map[seemore[0]][seemore[1]]['comment'].add(text);
+    notifyListeners();
+  }
 
   void changeSearch(key, value) {
     _mapSearch[key] = value;

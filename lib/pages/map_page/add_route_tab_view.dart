@@ -1,7 +1,7 @@
 // ignore_for_file: non_constant_identifier_names, must_be_immutable, use_build_context_synchronously
 
 import 'package:diplom/logic/database/map_route.dart';
-import 'package:diplom/logic/map_provider.dart';
+import 'package:diplom/logic/provider/map_provider.dart';
 import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/pages/map_page/route_tab.dart';
 import 'package:diplom/widgets/cust_field.dart';

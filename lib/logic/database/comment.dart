@@ -2,6 +2,7 @@ class Comment {
   late String id;
   late String uid;
   late String routeid;
+  late DateTime date;
   late String text;
   late List<String> block;
 
@@ -10,14 +11,16 @@ class Comment {
     required this.uid,
     required this.routeid,
     required this.text,
+    DateTime? newDate,
     this.block = const [],
-  });
+  }) : date = newDate ?? DateTime.now();
 
   Comment.fromJSON(Map<String, dynamic> json, this.id) {
     try {
       uid = json['uid'];
       routeid = json['routeid'];
       text = json['text'];
+      date = DateTime.parse(json['date'].toDate().toString());
       block = List<String>.from(json['block']);
     } catch (e) {
       print('comment error: $e');
@@ -28,6 +31,7 @@ class Comment {
         'uid': uid,
         'routeid': routeid,
         'text': text,
+        'date': date,
         'block': block,
       };
 }

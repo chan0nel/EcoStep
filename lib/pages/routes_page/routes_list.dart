@@ -5,9 +5,9 @@ import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/logic/database/user.dart';
-import 'package:diplom/logic/list_provider.dart';
-import 'package:diplom/logic/map_provider.dart';
-import 'package:diplom/logic/theme_provider.dart';
+import 'package:diplom/logic/provider/list_provider.dart';
+import 'package:diplom/logic/provider/map_provider.dart';
+import 'package:diplom/logic/provider/theme_provider.dart';
 import 'package:diplom/widgets/confirm_dialog.dart';
 import 'package:diplom/widgets/info_chip.dart';
 import 'package:flutter/material.dart';
@@ -221,7 +221,7 @@ class _RoutesListState extends State<RoutesList> {
                               builder: (context, value, value2, child) {
                                 return ElevatedButton(
                                     onPressed: () async {
-                                      value2.changeRoute(list[index]);
+                                      value.changeRoute(widget.name, index);
                                       if (value2.panelController.isPanelOpen) {
                                         await value2.panelController.close();
                                       }

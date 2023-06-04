@@ -1,10 +1,10 @@
 // ignore_for_file: avoid_init_to_null
 
 import 'package:async_button/async_button.dart';
-import 'package:diplom/logic/list_provider.dart';
-import 'package:diplom/logic/map_provider.dart';
+import 'package:diplom/logic/provider/list_provider.dart';
+import 'package:diplom/logic/provider/map_provider.dart';
 import 'package:diplom/logic/map_service.dart';
-import 'package:diplom/logic/theme_provider.dart';
+import 'package:diplom/logic/provider/theme_provider.dart';
 import 'package:diplom/pages/map_page/add_route_tab_view.dart';
 import 'package:diplom/pages/routes_page/see_more.dart';
 import 'package:extended_tabs/extended_tabs.dart';

@@ -1,14 +1,16 @@
-// ignore_for_file: unused_import, unused_field, unused_local_variable
+// ignore_for_file: unused_import, unused_field, unused_local_variable, use_build_context_synchronously
 
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/map_route.dart';
 import 'package:diplom/logic/database/user.dart';
-import 'package:diplom/logic/map_provider.dart';
+import 'package:diplom/logic/provider/list_provider.dart';
+import 'package:diplom/logic/provider/map_provider.dart';
 import 'package:diplom/widgets/atlitude_chart.dart';
 import 'package:diplom/widgets/comment_item.dart';
 import 'package:diplom/widgets/confirm_dialog.dart';
+import 'package:diplom/widgets/cust_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,29 +35,31 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
     super.initState();
   }
 
-  Future<void> _submit(String routeid, List<Comment> com) async {
+  Future<void> _submit(String routeid) async {
     if (ctrl.text.trim() != '') {
       final c = Comment(
-          uid: AuthenticationService().uid, routeid: routeid, text: ctrl.text);
-      setState(() {
-        com.add(c);
-      });
+          uid: AuthenticationService().uid,
+          routeid: routeid,
+          text: ctrl.text.trim());
       final a = await DBService().saveComment(obj: c);
-      print(a);
+      Provider.of<ListModel>(context, listen: false).addComment(c);
       ctrl.text = '';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<MapModel, AuthenticationService>(
+    return Consumer2<ListModel, AuthenticationService>(
       builder: (context, value, value2, child) {
-        if (value.route['map'] == null) {
+        if (value.seemore.isEmpty) {
           return const SizedBox.shrink();
         }
-        MapRoute mr = value.route['map'] ?? MapRoute();
-        User? user = value.route['user'];
-        List<Comment> com = value.route['comment'].cast<Comment>();
+        MapRoute mr =
+            value.map[value.seemore[0]][value.seemore[1]]['map'] ?? MapRoute();
+        User? user = value.map[value.seemore[0]][value.seemore[1]]['user'];
+        List<Comment> com = value.map[value.seemore[0]][value.seemore[1]]
+                ['comment']
+            .cast<Comment>();
         return ListView(
           padding: const EdgeInsets.fromLTRB(5, 5, 5, 100),
           controller: widget.scrollController,
@@ -71,20 +75,19 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                 ),
               ),
             ),
-            const Text('Название:'),
-            Text(mr.name),
-            Text('Тип передвижения: ${mr.profile}'),
-            Text('Протяженность: ${mr.distanceCast}'),
-            Text('Время прохождения: ${mr.timeCast}'),
-            const Text('График высот:'),
+            const SizedBox(height: 10),
+            CustText(mr.name, bold: true),
+            CustText('Тип передвижения: ${mr.profile}'),
+            CustText('Протяженность: ${mr.distanceCast}'),
+            CustText('Время прохождения: ${mr.timeCast}'),
+            const CustText('График высот:'),
             AtlitudeChart(
               data: mr.atlitude,
               distance: mr.distance,
             ),
-            Text('Подъем: ${mr.ascent}'),
-            Text('Спуск: ${mr.descent}'),
-            const Divider(),
-            const Text('Комментарии:'),
+            CustText('Подъем: ${mr.ascent}, Спуск: ${mr.descent}'),
+            const SizedBox(height: 10),
+            const CustText('Комментарии:', com: true),
             FutureBuilder(
               future: _getUser,
               builder: (context, snapshot) {
@@ -123,6 +126,7 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                       return CommentItem(
                         title: users[index][0].name,
                         photo: users[index][0].photo,
+                        date: users[index][1].date,
                         comment: users[index][1].text,
                         func1: () async {
                           if (user!.block
@@ -205,12 +209,12 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                       hintText: 'Введите комментарий',
                       suffixIcon: IconButton(
                         onPressed: () async {
-                          await _submit(mr.id, com);
+                          await _submit(mr.id);
                         },
                         icon: const Icon(Icons.send),
                       )),
                   onSubmitted: (text) async {
-                    await _submit(mr.id, com);
+                    await _submit(mr.id);
                   },
                 ))
           ],

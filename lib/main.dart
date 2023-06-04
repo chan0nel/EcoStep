@@ -1,12 +1,12 @@
-import 'package:diplom/logic/list_provider.dart';
-import 'package:diplom/logic/theme_provider.dart';
+import 'package:diplom/logic/provider/list_provider.dart';
+import 'package:diplom/logic/provider/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:diplom/logic/auth_service.dart';
-import 'package:diplom/logic/map_provider.dart';
+import 'package:diplom/logic/provider/map_provider.dart';
 import 'package:diplom/pages/home_page.dart';
 
 void main() async {

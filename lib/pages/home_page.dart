@@ -1,4 +1,4 @@
-import 'package:diplom/logic/map_provider.dart';
+import 'package:diplom/logic/provider/map_provider.dart';
 import 'package:diplom/pages/map_page/map_page.dart';
 import 'package:diplom/pages/profile_page/profile_page.dart';
 import 'package:diplom/pages/routes_page/routes_page.dart';

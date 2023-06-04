@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:diplom/logic/list_provider.dart';
+import 'package:diplom/logic/provider/list_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
