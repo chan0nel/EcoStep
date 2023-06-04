@@ -70,8 +70,14 @@ class SliverHeader extends StatelessWidget {
                 icon: Consumer<ListModel>(
                   builder: (context, value, child) {
                     return value.shown[name] == true
-                        ? const Icon(Icons.arrow_drop_up)
-                        : const Icon(Icons.arrow_drop_down);
+                        ? const Icon(
+                            Icons.arrow_drop_up,
+                            color: Colors.black,
+                          )
+                        : const Icon(
+                            Icons.arrow_drop_down,
+                            color: Colors.black,
+                          );
                   },
                 ),
               )

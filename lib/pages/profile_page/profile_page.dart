@@ -217,6 +217,17 @@ class _ProfilePageState extends State<ProfilePage> {
                             )
                           ]),
                     ),
+                    user.block.length >= 5
+                        ? const Text(
+                            'Аккаунт не виден другим пользователям из-за жалоб'
+                            '\nДля отмены жалоб обратитесь в службу поддержки',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.black45,
+                              fontSize: 14,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                     ListView(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),

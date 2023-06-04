@@ -1,9 +1,13 @@
+// ignore_for_file: prefer_function_declarations_over_variables
+
 import 'dart:collection';
 
+import 'package:diplom/logic/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class ListModel extends ChangeNotifier {
+  Function refresh = () => {};
   final PanelController panelController = PanelController();
 
   final Map<String, bool> _mapSearch = {
@@ -40,6 +44,24 @@ class ListModel extends ChangeNotifier {
     _seemore.add(key);
     _seemore.add(value);
     notifyListeners();
+  }
+
+  void updateBlock(what, {ind = -1}) {
+    if (ind == -1) {
+      _map[seemore[0]][seemore[1]][what].block.add(AuthenticationService().uid);
+      if (_map[seemore[0]][seemore[1]][what].block.length >= 5) {
+        refresh();
+        notifyListeners();
+      }
+    } else {
+      _map[seemore[0]][seemore[1]][what][ind]
+          .block
+          .add(AuthenticationService().uid);
+      if (_map[seemore[0]][seemore[1]][what][ind].block.length >= 5) {
+        refresh();
+        notifyListeners();
+      }
+    }
   }
 
   void addComment(text) {

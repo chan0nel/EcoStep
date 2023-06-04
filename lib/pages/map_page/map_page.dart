@@ -267,7 +267,9 @@ class _MapPageState extends State<MapPage>
                         topRight: Radius.circular(24.0),
                       )
                     : null,
-                panelBuilder: (sc) => SeeMorePanel(scrollController: sc)),
+                panelBuilder: (sc) {
+                  return SeeMorePanel(sc: sc);
+                }),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/user.dart';
 
@@ -12,18 +13,30 @@ class DBService {
   Future<List<dynamic>> get(String collection) async {
     List<dynamic> listData = [];
     try {
+      String uid = AuthenticationService().isAnonymous
+          ? ''
+          : AuthenticationService().uid;
       await _instance.collection(collection).get().then((query) {
         listData = query.docs
             .map((e) {
-              if (e.data()['block'].length < 5) {
-                switch (collection) {
-                  case 'comments':
-                    return Comment.fromJSON(e.data(), e.id);
-                  case 'map-routes':
-                    return MapRoute.fromJSON(e.data(), e.id);
-                  case 'users':
-                    return User.fromJSON(e.data(), e.id);
-                }
+              bool a = e.data()['block'].length >= 5;
+              switch (collection) {
+                case 'comments':
+                  if (a) {
+                    if (e.data()['uid'] != uid) break;
+                  }
+                  return Comment.fromJSON(e.data(), e.id);
+                case 'map-routes':
+                  if (a) {
+                    if (e.data()['uid'] != uid) break;
+                  }
+                  return MapRoute.fromJSON(e.data(), e.id);
+                case 'users':
+                  if (a) {
+                    print(e.data()['uid'] != uid);
+                    if (e.id != uid) break;
+                  }
+                  return User.fromJSON(e.data(), e.id);
               }
             })
             .where((element) => element != null)

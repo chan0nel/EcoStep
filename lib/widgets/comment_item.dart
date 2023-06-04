@@ -5,15 +5,17 @@ import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 class CommentItem extends StatelessWidget {
-  const CommentItem(
-      {required this.title,
-      required this.photo,
-      required this.comment,
-      required this.date,
-      required this.func1,
-      required this.func2,
-      super.key});
-
+  const CommentItem({
+    required this.uid,
+    required this.title,
+    required this.photo,
+    required this.comment,
+    required this.date,
+    required this.func1,
+    required this.func2,
+    super.key,
+  });
+  final String uid;
   final String title;
   final int photo;
   final DateTime date;
@@ -26,10 +28,9 @@ class CommentItem extends StatelessWidget {
     initializeDateFormatting('ru');
     String temp = DateFormat('hh:mm').format(date);
     if (DateTime.now().difference(date).inHours >= 24) {
-      temp = DateFormat.yMMMd().add_jm().format(date);
+      temp = DateFormat('d MMM yyг.', 'ru').format(date);
     }
     return ListTile(
-      isThreeLine: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 5),
       leading: GestureDetector(
         onTap: () {
@@ -56,6 +57,7 @@ class CommentItem extends StatelessWidget {
           Text(
             temp,
             style: TextStyle(
+                fontSize: 13,
                 color: Theme.of(context).brightness == Brightness.light
                     ? Colors.black38
                     : Colors.white38),
@@ -67,11 +69,16 @@ class CommentItem extends StatelessWidget {
       ),
       trailing: Consumer<AuthenticationService>(
         builder: (context, value, child) {
-          if (value.isAnonymous || !value.isVerified) {
+          if (value.isAnonymous || value.uid == uid) {
             return const SizedBox.shrink();
           }
           return IconButton(
               onPressed: () {
+                if (!value.isVerified) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('Аккаунт не верифицирован')));
+                  return;
+                }
                 func2();
               },
               icon: const Icon(Icons.block));

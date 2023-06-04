@@ -18,13 +18,8 @@ class RoutesList extends StatefulWidget {
   final String name;
   final bool save;
   final int delete;
-  final Function update;
   const RoutesList(
-      {super.key,
-      required this.name,
-      this.save = false,
-      this.delete = 0,
-      required this.update});
+      {super.key, required this.name, this.save = false, this.delete = 0});
 
   @override
   State<RoutesList> createState() => _RoutesListState();
@@ -64,11 +59,10 @@ class _RoutesListState extends State<RoutesList> {
                                 opt: 'пожаловаться на маршрут \'${mr.name}\''),
                           );
                           if (res) {
+                            value.changeRoute(widget.name, index);
                             mr.block.add(AuthenticationService().uid);
                             await DBService().update('map-routes/${mr.id}', mr);
-                            if (mr.block.length >= 5) {
-                              widget.update();
-                            }
+                            value.updateBlock('map');
                           }
                         }
                       },
@@ -94,11 +88,10 @@ class _RoutesListState extends State<RoutesList> {
                                     '\'${user.name}\''),
                           );
                           if (res) {
+                            value.changeRoute(widget.name, index);
                             user.block.add(AuthenticationService().uid);
                             await DBService().update('users/${user.uid}', user);
-                            if (user.block.length >= 5) {
-                              widget.update();
-                            }
+                            value.updateBlock('user');
                           }
                         }
                       },
@@ -132,11 +125,10 @@ class _RoutesListState extends State<RoutesList> {
                                     '\'${user.name}\''),
                           );
                           if (res) {
+                            value.changeRoute(widget.name, index);
                             user.block.add(AuthenticationService().uid);
                             await DBService().update('users/${user.uid}', user);
-                            if (user.block.length >= 5) {
-                              widget.update();
-                            }
+                            value.updateBlock('user');
                           }
                         }
                       },
@@ -225,11 +217,6 @@ class _RoutesListState extends State<RoutesList> {
                                       if (value2.panelController.isPanelOpen) {
                                         await value2.panelController.close();
                                       }
-                                      await value2.pageController.animateToPage(
-                                          0,
-                                          duration:
-                                              const Duration(milliseconds: 100),
-                                          curve: Curves.bounceIn);
                                       Polyline pl = Polyline(
                                           points: mr.polyline.points,
                                           borderColor: mr.polyline.borderColor,
@@ -238,6 +225,14 @@ class _RoutesListState extends State<RoutesList> {
                                               mr.polyline.borderStrokeWidth,
                                           strokeWidth: mr.polyline.strokeWidth);
                                       value2.addPolyline(pl, mr.accentPolyline);
+                                      if (value.panelController.isPanelOpen) {
+                                        await value.panelController.close();
+                                      }
+                                      await value2.pageController.animateToPage(
+                                          0,
+                                          duration:
+                                              const Duration(milliseconds: 100),
+                                          curve: Curves.bounceIn);
                                       await value.panelController
                                           .animatePanelToSnapPoint(
                                               duration: const Duration(
@@ -258,14 +253,14 @@ class _RoutesListState extends State<RoutesList> {
                                       if (widget.delete == 1) {
                                         await DBService()
                                             .delete('map-routes/${mr.id}');
-                                        widget.update();
+                                        value.refresh();
                                       }
                                       if (widget.delete == 2) {
                                         final user =
                                             await AuthenticationService().my;
                                         user.saves.remove(mr.id);
                                         await DBService().setUser(user);
-                                        widget.update();
+                                        value.refresh();
                                       }
                                     }
                                   },
@@ -279,7 +274,7 @@ class _RoutesListState extends State<RoutesList> {
                                         await AuthenticationService().my;
                                     user.saves.add(mr.id);
                                     await DBService().setUser(user);
-                                    widget.update();
+                                    value.refresh();
                                   },
                                   child: const Text('Сохранить')),
                             )

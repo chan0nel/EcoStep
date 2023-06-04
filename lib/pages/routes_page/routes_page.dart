@@ -75,7 +75,9 @@ class _RoutesPageState extends State<RoutesPage>
     User my = User();
     if (!auth.isAnonymous || auth.isVerified) {
       uid = auth.uid;
-      my = u.firstWhere((element) => element.uid == uid);
+      my = u.firstWhere((element) {
+        return element.uid == uid;
+      });
     }
     for (var element in mr) {
       if (!auth.isAnonymous || auth.isVerified) {
@@ -91,7 +93,7 @@ class _RoutesPageState extends State<RoutesPage>
             'map': element,
             'comment': com.where((el) => el.routeid == element.id).toList(),
             'user': u.firstWhere((el) => el.uid == element.uid,
-                orElse: () => User())
+                orElse: () => User(uid: 'blocked'))
           });
           continue;
         }
@@ -106,9 +108,16 @@ class _RoutesPageState extends State<RoutesPage>
       map['other'].add({
         'map': element,
         'comment': com.where((el) => el.routeid == element.id).toList(),
-        'user': u.firstWhere((el) => el.uid == element.uid)
+        'user': u.firstWhere(
+          (el) => el.uid == element.uid,
+          orElse: () => User(uid: 'blocked'),
+        )
       });
     }
+    map['saves'] =
+        map['saves'].where((e) => e['user'].uid != 'blocked').toList();
+    map['other'] =
+        map['other'].where((e) => e['user'].uid != 'blocked').toList();
     if (search) {
       map = _search(map);
     }
@@ -257,6 +266,7 @@ class _RoutesPageState extends State<RoutesPage>
               dynamic temp = updateCategories(data[0].cast<Comment>(),
                   data[1].cast<MapRoute>(), data[2].cast<User>());
               Provider.of<ListModel>(context, listen: false).setMap(temp);
+              Provider.of<ListModel>(context, listen: false).refresh = refresh;
               return RefreshIndicator(
                 onRefresh: refresh,
                 child: CustomScrollView(
@@ -282,27 +292,24 @@ class _RoutesPageState extends State<RoutesPage>
                     ..._sliver(
                         const SliverHeader(
                             text: 'Ваши маршруты', name: 'yours'),
-                        RoutesList(
+                        const RoutesList(
                           name: 'yours',
-                          update: refresh,
                           delete: 1,
                         ),
                         'yours'),
                     ..._sliver(
                         const SliverHeader(
                             text: 'Сохранненные маршруты', name: 'saves'),
-                        RoutesList(
+                        const RoutesList(
                           name: 'saves',
-                          update: refresh,
                           delete: 2,
                         ),
                         'saves'),
                     ..._sliver(
                         const SliverHeader(
                             text: 'Наши маршруты', name: 'default'),
-                        RoutesList(
+                        const RoutesList(
                           name: 'default',
-                          update: refresh,
                         ),
                         'default'),
                     ..._sliver(
@@ -311,7 +318,6 @@ class _RoutesPageState extends State<RoutesPage>
                         RoutesList(
                           name: 'other',
                           save: !AuthenticationService().isAnonymous,
-                          update: refresh,
                         ),
                         'other'),
                   ],

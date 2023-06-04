@@ -15,8 +15,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class SeeMorePanel extends StatefulWidget {
-  final ScrollController scrollController;
-  const SeeMorePanel({super.key, required this.scrollController});
+  final ScrollController sc;
+  const SeeMorePanel({required this.sc, super.key});
 
   @override
   State<SeeMorePanel> createState() => _SeeMorePanelState();
@@ -51,18 +51,22 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
   Widget build(BuildContext context) {
     return Consumer2<ListModel, AuthenticationService>(
       builder: (context, value, value2, child) {
-        if (value.seemore.isEmpty) {
+        if (value.panelController.isPanelClosed) {
           return const SizedBox.shrink();
         }
+        ScrollController sc = widget.sc;
         MapRoute mr =
             value.map[value.seemore[0]][value.seemore[1]]['map'] ?? MapRoute();
         User? user = value.map[value.seemore[0]][value.seemore[1]]['user'];
         List<Comment> com = value.map[value.seemore[0]][value.seemore[1]]
                 ['comment']
             .cast<Comment>();
+        com.sort(
+          (a, b) => a.date.compareTo(b.date),
+        );
         return ListView(
           padding: const EdgeInsets.fromLTRB(5, 5, 5, 100),
-          controller: widget.scrollController,
+          controller: sc,
           children: [
             UnconstrainedBox(
               child: Container(
@@ -92,6 +96,8 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
               future: _getUser,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.done) {
+                  com =
+                      com.where((element) => element.block.length < 5).toList();
                   List<dynamic> users = [];
                   for (var element in com) {
                     for (var elem in snapshot.data!) {
@@ -104,16 +110,22 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                     final theme = Theme.of(context);
                     return SizedBox(
                       height: 50,
-                      child: Center(
-                          child: Text(
-                        'Комментариев пока нет. Будьте первым!',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: theme.brightness == Brightness.light
-                              ? theme.disabledColor
-                              : theme.splashColor,
-                        ),
-                      )),
+                      child: OverflowBox(
+                        minWidth: 400,
+                        maxHeight: 75,
+                        maxWidth: 400,
+                        minHeight: 75,
+                        child: Center(
+                            child: Text(
+                          'Комментариев пока нет. Будьте первым!',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: theme.brightness == Brightness.light
+                                ? theme.disabledColor
+                                : theme.splashColor,
+                          ),
+                        )),
+                      ),
                     );
                   }
                   return ListView.separated(
@@ -124,12 +136,14 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                     separatorBuilder: (context, index) => const Divider(),
                     itemBuilder: (context, index) {
                       return CommentItem(
+                        uid: users[index][0].uid,
                         title: users[index][0].name,
                         photo: users[index][0].photo,
                         date: users[index][1].date,
                         comment: users[index][1].text,
                         func1: () async {
-                          if (user!.block
+                          if (users[index][0]
+                              .block
                               .contains(AuthenticationService().uid)) {
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(const SnackBar(
@@ -141,13 +155,22 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                               context: context,
                               builder: (context) => ConfirmDialog(
                                   opt: 'пожаловаться на пользователя '
-                                      '\'${user.name}\''),
+                                      '\'${users[index][0].name}\''),
                             );
                             if (res) {
-                              user.block.add(AuthenticationService().uid);
-                              await DBService()
-                                  .update('users/${user.uid}', user);
-                              if (user.block.length >= 5) {
+                              users[index][0]
+                                  .block
+                                  .add(AuthenticationService().uid);
+                              await DBService().update(
+                                  'users/${users[index][0].uid}',
+                                  users[index][0]);
+                              value.updateBlock('user');
+                              if (value
+                                      .map[value.seemore[0]][value.seemore[1]]
+                                          ['user']
+                                      .block
+                                      .length >=
+                                  5) {
                                 setState(() {
                                   _getUser = getUsers();
                                 });
@@ -156,11 +179,13 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                           }
                         },
                         func2: () async {
-                          if (mr.block.contains(AuthenticationService().uid)) {
+                          if (users[index][1]
+                              .block
+                              .contains(AuthenticationService().uid)) {
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(const SnackBar(
-                              content:
-                                  Text('Вы уже пожаловались на данный маршрут'),
+                              content: Text(
+                                  'Вы уже пожаловались на данный комментарий'),
                             ));
                           } else {
                             final res = await showDialog(
@@ -173,7 +198,13 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                               com[index].block.add(AuthenticationService().uid);
                               await DBService().update(
                                   'comments/${com[index].id}', com[index]);
-                              if (com[index].block.length >= 5) {
+                              value.updateBlock('comment', ind: index);
+                              if (value
+                                      .map[value.seemore[0]][value.seemore[1]]
+                                          ['comment'][index]
+                                      .block
+                                      .length >=
+                                  5) {
                                 setState(() {
                                   _getUser = getUsers();
                                 });
@@ -188,9 +219,15 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SizedBox(
                     height: 30,
-                    child: Center(
-                      child:
-                          UnconstrainedBox(child: CircularProgressIndicator()),
+                    child: OverflowBox(
+                      minWidth: 400,
+                      maxHeight: 50,
+                      maxWidth: 400,
+                      minHeight: 50,
+                      child: Center(
+                        child: UnconstrainedBox(
+                            child: CircularProgressIndicator()),
+                      ),
                     ),
                   );
                 }
