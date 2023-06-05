@@ -21,7 +21,7 @@ class ThemeProvider extends ChangeNotifier {
 
   bool get curTheme => _darkTheme;
 
-  ThemeData get theme => _darkTheme ? light : dark; //Getter
+  ThemeData get theme => _darkTheme ? light : dark;
 
   ThemeProvider() {
     _darkTheme = true;
