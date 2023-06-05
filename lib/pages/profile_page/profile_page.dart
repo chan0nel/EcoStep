@@ -198,144 +198,160 @@ class _ProfilePageState extends State<ProfilePage> {
               return Consumer<AuthenticationService>(
                   builder: (context, value, child) {
                 return Center(
-                  child: ListView(children: [
-                    GestureDetector(
-                      onTap: () => showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return _dialogPhoto(context, user);
-                          }),
-                      child: Image.asset(
-                        'images/photo (${user.photo}).png',
-                        width: 200,
-                        height: 200,
-                      ),
-                    ),
-                    SizedBox.fromSize(size: const Size.fromHeight(10)),
-                    GestureDetector(
-                      onTap: () => showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return _dialogName(context, user);
-                          }),
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${user.name} ',
-                              style: const TextStyle(fontSize: 20),
+                    child: RefreshIndicator(
+                        child: ListView(children: [
+                          GestureDetector(
+                            onTap: () => showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return _dialogPhoto(context, user);
+                                }),
+                            child: Image.asset(
+                              'images/photo (${user.photo}).png',
+                              width: 200,
+                              height: 200,
                             ),
-                            const Icon(
-                              Icons.edit,
-                              size: 20,
-                            )
-                          ]),
-                    ),
-                    user.block.length >= 5
-                        ? const Text(
-                            'Аккаунт не виден другим пользователям из-за жалоб'
-                            '\nДля отмены жалоб обратитесь в службу поддержки',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.black45,
-                              fontSize: 14,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                    ListView(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        Visibility(
-                            visible: !value.isVerified,
-                            child: const CustText('Аккаунт не верифицирован')),
-                        Visibility(
-                          visible: !value.isVerified,
-                          child: ElevatedButton(
-                              onPressed: () async {
-                                await value.verificate();
-                              },
-                              child: const Text('Верифицировать')),
-                        ),
-                        const Divider(
-                          height: 30,
-                          color: Colors.black38,
-                          indent: 20,
-                          endIndent: 20,
-                        ),
-                        TextButton(
-                            onPressed: () async {
-                              await value.resetPass();
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text(
-                                      'Письмо на смену пароля отправлено: ${value.user!.email}')));
-                            },
-                            child: const CustText(
-                              'Поменять пароль',
-                            )),
-                        const Divider(
-                          height: 30,
-                          color: Colors.black38,
-                          indent: 20,
-                          endIndent: 20,
-                        ),
-                        TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const ReferencePage(),
-                                  ));
-                            },
-                            child: const CustText(
-                              'Справка',
-                            )),
-                        const Divider(
-                          height: 30,
-                          color: Colors.black38,
-                          indent: 20,
-                          endIndent: 20,
-                        ),
-                        TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AboutPage(),
-                                  ));
-                            },
-                            child: const CustText(
-                              'О приложении',
-                            )),
-                        const Divider(
-                          height: 30,
-                          color: Colors.black38,
-                          indent: 20,
-                          endIndent: 20,
-                        ),
-                        Container(
-                            height: 40,
-                            width: 75,
-                            alignment: Alignment.center,
-                            child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                    foregroundColor: Colors.white),
-                                onPressed: () async {
-                                  final res = await showDialog(
-                                      context: context,
-                                      builder: (context) =>
-                                          const ConfirmDialog(opt: 'выйти'));
-                                  if (res) {
-                                    await value.signOut();
-                                    _update();
-                                  }
-                                },
-                                child: const Text('Выйти'))),
-                      ],
-                    ),
-                  ]),
-                );
+                          ),
+                          SizedBox.fromSize(size: const Size.fromHeight(10)),
+                          GestureDetector(
+                            onTap: () => showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return _dialogName(context, user);
+                                }),
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    '${user.name} ',
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                  const Icon(
+                                    Icons.edit,
+                                    size: 20,
+                                  )
+                                ]),
+                          ),
+                          user.block.length >= 5
+                              ? const Text(
+                                  'Аккаунт не виден другим пользователям из-за жалоб'
+                                  '\nДля отмены жалоб обратитесь в службу поддержки',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.black45,
+                                    fontSize: 14,
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                          ListView(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            children: [
+                              Visibility(
+                                  visible: !value.isVerified,
+                                  child: const Center(
+                                      child: CustText(
+                                          'Аккаунт не верифицирован'))),
+                              Visibility(
+                                visible: !value.isVerified,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 30),
+                                  child: ElevatedButton(
+                                      onPressed: () async {
+                                        await value.verificate();
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(SnackBar(
+                                                content: Text(
+                                                    'Письмо отправлено на почту: ${value.user!.email}')));
+                                      },
+                                      child: const Text('Верифицировать')),
+                                ),
+                              ),
+                              const Divider(
+                                height: 30,
+                                color: Colors.black38,
+                                indent: 20,
+                                endIndent: 20,
+                              ),
+                              TextButton(
+                                  onPressed: () async {
+                                    await value.resetPass();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Письмо на смену пароля отправлено: ${value.user!.email}')));
+                                  },
+                                  child: const CustText(
+                                    'Поменять пароль',
+                                  )),
+                              const Divider(
+                                height: 30,
+                                color: Colors.black38,
+                                indent: 20,
+                                endIndent: 20,
+                              ),
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const ReferencePage(),
+                                        ));
+                                  },
+                                  child: const CustText(
+                                    'Справка',
+                                  )),
+                              const Divider(
+                                height: 30,
+                                color: Colors.black38,
+                                indent: 20,
+                                endIndent: 20,
+                              ),
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AboutPage(),
+                                        ));
+                                  },
+                                  child: const CustText(
+                                    'О приложении',
+                                  )),
+                              const Divider(
+                                height: 30,
+                                color: Colors.black38,
+                                indent: 20,
+                                endIndent: 20,
+                              ),
+                              Container(
+                                  height: 40,
+                                  width: 75,
+                                  alignment: Alignment.center,
+                                  child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor: Colors.white),
+                                      onPressed: () async {
+                                        final res = await showDialog(
+                                            context: context,
+                                            builder: (context) =>
+                                                const ConfirmDialog(
+                                                    opt: 'выйти'));
+                                        if (res) {
+                                          await value.signOut();
+                                          _update();
+                                        }
+                                      },
+                                      child: const Text('Выйти'))),
+                            ],
+                          ),
+                        ]),
+                        onRefresh: () => Future(() {
+                              _update();
+                            })));
               });
             }
           } else {

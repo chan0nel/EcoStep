@@ -159,7 +159,8 @@ class MapModel extends ChangeNotifier {
     switch (type) {
       case 0:
         if (_points.length < 2) {
-          _points.add({'ctrl': TextEditingController(), 'point': null});
+          _points.add(
+              {'ctrl': TextEditingController(), 'point': null, 'search': {}});
         }
         break;
       case 1:
@@ -169,7 +170,8 @@ class MapModel extends ChangeNotifier {
           }
         }
         if (_points.length < 2) {
-          _points.add({'ctrl': TextEditingController(), 'point': null});
+          _points.add(
+              {'ctrl': TextEditingController(), 'point': null, 'search': {}});
         }
         break;
       case 2:

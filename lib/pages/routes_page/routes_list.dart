@@ -47,7 +47,13 @@ class _RoutesListState extends State<RoutesList> {
                   child: IconButton(
                       onPressed: () async {
                         if (AuthenticationService().isAnonymous ||
-                            !AuthenticationService().isVerified) return;
+                            !AuthenticationService().isVerified) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Ваш аккаунт не верифицирован.')));
+                          return;
+                        }
                         if (mr.block.contains(AuthenticationService().uid)) {
                           ScaffoldMessenger.of(context)
                               .showSnackBar(const SnackBar(
@@ -77,7 +83,14 @@ class _RoutesListState extends State<RoutesList> {
                     child: GestureDetector(
                       onTap: () async {
                         if (AuthenticationService().isAnonymous ||
-                            !AuthenticationService().isVerified) return;
+                            !AuthenticationService().isVerified) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Ваш аккаунт не верифицирован.')));
+                          return;
+                        }
+                        ;
                         if (user!.block.contains(AuthenticationService().uid)) {
                           ScaffoldMessenger.of(context)
                               .showSnackBar(const SnackBar(
@@ -116,7 +129,13 @@ class _RoutesListState extends State<RoutesList> {
                     child: GestureDetector(
                       onTap: () async {
                         if (AuthenticationService().isAnonymous ||
-                            !AuthenticationService().isVerified) return;
+                            !AuthenticationService().isVerified) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Ваш аккаунт не верифицирован.')));
+                          return;
+                        }
                         if (user!.block.contains(AuthenticationService().uid)) {
                           ScaffoldMessenger.of(context)
                               .showSnackBar(const SnackBar(

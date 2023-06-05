@@ -142,6 +142,13 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                         date: users[index][1].date,
                         comment: users[index][1].text,
                         func1: () async {
+                          if (AuthenticationService().isAnonymous) return;
+                          if (!AuthenticationService().isVerified) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Аккаунт не верифицирован')));
+                            return;
+                          }
                           if (users[index][0]
                               .block
                               .contains(AuthenticationService().uid)) {
@@ -179,6 +186,13 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                           }
                         },
                         func2: () async {
+                          if (AuthenticationService().isAnonymous) return;
+                          if (!AuthenticationService().isVerified) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Аккаунт не верифицирован')));
+                            return;
+                          }
                           if (users[index][1]
                               .block
                               .contains(AuthenticationService().uid)) {
@@ -235,7 +249,7 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
               },
             ),
             Visibility(
-                visible: !value2.isAnonymous || value2.isVerified,
+                visible: !value2.isAnonymous && value2.isVerified,
                 child: TextField(
                   controller: ctrl,
                   maxLength: 50,
