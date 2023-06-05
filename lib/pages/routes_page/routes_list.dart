@@ -43,9 +43,11 @@ class _RoutesListState extends State<RoutesList> {
                 tilePadding:
                     user != null ? const EdgeInsets.only(right: 10) : null,
                 leading: Visibility(
-                  visible: user != null,
+                  visible: user != null && !AuthenticationService().isAnonymous,
                   child: IconButton(
                       onPressed: () async {
+                        if (AuthenticationService().isAnonymous ||
+                            !AuthenticationService().isVerified) return;
                         if (mr.block.contains(AuthenticationService().uid)) {
                           ScaffoldMessenger.of(context)
                               .showSnackBar(const SnackBar(
@@ -74,6 +76,8 @@ class _RoutesListState extends State<RoutesList> {
                     visible: user != null,
                     child: GestureDetector(
                       onTap: () async {
+                        if (AuthenticationService().isAnonymous ||
+                            !AuthenticationService().isVerified) return;
                         if (user!.block.contains(AuthenticationService().uid)) {
                           ScaffoldMessenger.of(context)
                               .showSnackBar(const SnackBar(
@@ -111,6 +115,8 @@ class _RoutesListState extends State<RoutesList> {
                     visible: user != null,
                     child: GestureDetector(
                       onTap: () async {
+                        if (AuthenticationService().isAnonymous ||
+                            !AuthenticationService().isVerified) return;
                         if (user!.block.contains(AuthenticationService().uid)) {
                           ScaffoldMessenger.of(context)
                               .showSnackBar(const SnackBar(

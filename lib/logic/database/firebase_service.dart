@@ -33,7 +33,6 @@ class DBService {
                   return MapRoute.fromJSON(e.data(), e.id);
                 case 'users':
                   if (a) {
-                    print(e.data()['uid'] != uid);
                     if (e.id != uid) break;
                   }
                   return User.fromJSON(e.data(), e.id);

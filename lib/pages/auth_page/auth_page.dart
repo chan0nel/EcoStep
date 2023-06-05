@@ -178,7 +178,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                       ctrl: signUpCtrl[0],
                     ),
                     CustomField(
-                      hintText: 'nickname',
+                      hintText: 'никнейм',
                       ctrl: signUpCtrl[1],
                     ),
                     PasswordField(

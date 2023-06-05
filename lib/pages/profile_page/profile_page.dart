@@ -3,6 +3,8 @@
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
 import 'package:diplom/logic/database/user.dart';
+import 'package:diplom/pages/about/about.dart';
+import 'package:diplom/pages/about/reference.dart';
 import 'package:diplom/pages/auth_page/auth_page.dart';
 import 'package:diplom/widgets/confirm_dialog.dart';
 import 'package:diplom/widgets/cust_field.dart';
@@ -162,7 +164,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       endIndent: 20,
                     ),
                     TextButton(
-                        onPressed: () async {},
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ReferencePage(),
+                              ));
+                        },
                         child: const CustText(
                           'Справка',
                         )),
@@ -173,7 +181,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       endIndent: 20,
                     ),
                     TextButton(
-                        onPressed: () async {},
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AboutPage(),
+                              ));
+                        },
                         child: const CustText(
                           'О приложении',
                         )),
@@ -266,7 +280,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           endIndent: 20,
                         ),
                         TextButton(
-                            onPressed: () async {},
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const ReferencePage(),
+                                  ));
+                            },
                             child: const CustText(
                               'Справка',
                             )),
@@ -277,7 +297,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           endIndent: 20,
                         ),
                         TextButton(
-                            onPressed: () async {},
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AboutPage(),
+                                  ));
+                            },
                             child: const CustText(
                               'О приложении',
                             )),
