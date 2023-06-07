@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 class User {
   late String uid;
   late String name;

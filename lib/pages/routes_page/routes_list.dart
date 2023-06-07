@@ -90,7 +90,6 @@ class _RoutesListState extends State<RoutesList> {
                                       Text('Ваш аккаунт не верифицирован.')));
                           return;
                         }
-                        ;
                         if (user!.block.contains(AuthenticationService().uid)) {
                           ScaffoldMessenger.of(context)
                               .showSnackBar(const SnackBar(
@@ -196,9 +195,9 @@ class _RoutesListState extends State<RoutesList> {
                                       TileLayer(
                                         urlTemplate: value.curTheme
                                             ? 'https://tile.jawg.io/jawg-sunny/{z}/{x}/{y}.png?'
-                                                'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM'
+                                                'access-token=${const String.fromEnvironment('map_api')}'
                                             : 'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}.png?'
-                                                'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM',
+                                                'access-token=${const String.fromEnvironment('map_api')}',
                                       ),
                                       PolylineLayer(
                                         polylines: [mr.polyline],

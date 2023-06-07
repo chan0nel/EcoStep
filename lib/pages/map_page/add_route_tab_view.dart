@@ -288,7 +288,7 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
                   value.addTab(lis[i].name, RouteTab(mp: lis[i]));
                   widget.upd();
                 }
-                value.mapController.move(lis[0].bbox.center, 12);
+                value.mapController.move(lis[0].bbox.center, 14);
               }
               asyncCtrl.update(AsyncBtnState.idle);
             },

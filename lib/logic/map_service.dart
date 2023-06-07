@@ -1,4 +1,4 @@
-// ignore_for_file: file_names, avoid_print
+// ignore_for_file: file_names, avoid_print, depend_on_referenced_packages
 import 'dart:convert';
 
 import 'package:diplom/logic/database/map_route.dart';
@@ -17,8 +17,8 @@ class MapService {
     ORSProfile.footHiking,
     ORSProfile.wheelchair
   ];
-  final OpenRouteService _ors = OpenRouteService(
-      apiKey: '5b3ce3597851110001cf624834db9092e45f491c90ae6a9920f89d57');
+  final OpenRouteService _ors =
+      OpenRouteService(apiKey: const String.fromEnvironment('ors_api'));
 
   Future<List<MapRoute>> getRoute({
     required int profile,
@@ -78,7 +78,7 @@ class MapService {
   ) async {
     try {
       final url = Uri.https('api.openrouteservice.org', '/geocode/reverse', {
-        'api_key': '5b3ce3597851110001cf624834db9092e45f491c90ae6a9920f89d57',
+        'api_key': const String.fromEnvironment('ors_api'),
         'point.lon': point.longitude.toString(),
         'point.lat': point.latitude.toString(),
         'size': '1',
@@ -104,7 +104,7 @@ class MapService {
     try {
       final url =
           Uri.https('api.openrouteservice.org', '/geocode/autocomplete', {
-        'api_key': '5b3ce3597851110001cf624834db9092e45f491c90ae6a9920f89d57',
+        'api_key': const String.fromEnvironment('ors_api'),
         'text': text,
         'layers': 'venue,neighbourhood',
         'lang': 'ru',

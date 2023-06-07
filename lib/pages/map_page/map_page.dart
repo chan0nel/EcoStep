@@ -135,9 +135,9 @@ class _MapPageState extends State<MapPage>
                 TileLayer(
                   urlTemplate: value2.curTheme
                       ? 'https://tile.jawg.io/jawg-sunny/{z}/{x}/{y}.png?'
-                          'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM'
+                          'access-token=${const String.fromEnvironment('map_api')}'
                       : 'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}.png?'
-                          'access-token=43LAhxnCITdWbjRocDbg5csEq5LaIYqxcn1TLZX2mSI0ngLlFmDmfR4Tq9UNTRaM',
+                          'access-token=${const String.fromEnvironment('map_api')}',
                 ),
                 PolylineLayer(
                   saveLayers: true,
