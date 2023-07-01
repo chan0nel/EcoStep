@@ -57,6 +57,9 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
   @override
   void dispose() {
     keyboardSubscription.cancel();
+    async1.dispose();
+    async2.dispose();
+    async3.dispose();
     super.dispose();
   }
 

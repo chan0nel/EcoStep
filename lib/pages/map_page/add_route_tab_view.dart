@@ -1,6 +1,7 @@
 // ignore_for_file: non_constant_identifier_names, must_be_immutable, use_build_context_synchronously
 
 import 'package:diplom/logic/database/map_route.dart';
+import 'package:diplom/logic/provider/list_provider.dart';
 import 'package:diplom/logic/provider/map_provider.dart';
 import 'package:diplom/logic/map_service.dart';
 import 'package:diplom/pages/map_page/route_tab.dart';
@@ -288,9 +289,10 @@ class _AddRouteTabViewState extends State<AddRouteTabView> {
                   value.addTab(lis[i].name, RouteTab(mp: lis[i]));
                   widget.upd();
                 }
-                value.mapController.move(lis[0].bbox.center, 14);
+                value.mapController.move(lis[0].bbox.center, 12);
               }
               asyncCtrl.update(AsyncBtnState.idle);
+              Provider.of<ListModel>(context).refresh();
             },
             child: const Text('Составить маршрут'),
           )

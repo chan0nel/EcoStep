@@ -252,6 +252,8 @@ class _RoutesListState extends State<RoutesList> {
                                       if (value.panelController.isPanelOpen) {
                                         await value.panelController.close();
                                       }
+                                      value2.mapController
+                                          .move(mr.bbox.center, 12);
                                       await value2.pageController.animateToPage(
                                           0,
                                           duration:

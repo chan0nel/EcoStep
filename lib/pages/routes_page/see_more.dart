@@ -1,5 +1,7 @@
 // ignore_for_file: unused_import, unused_field, unused_local_variable, use_build_context_synchronously
 
+import 'dart:async';
+
 import 'package:diplom/logic/auth_service.dart';
 import 'package:diplom/logic/database/comment.dart';
 import 'package:diplom/logic/database/firebase_service.dart';
@@ -12,6 +14,7 @@ import 'package:diplom/widgets/comment_item.dart';
 import 'package:diplom/widgets/confirm_dialog.dart';
 import 'package:diplom/widgets/cust_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:provider/provider.dart';
 
 class SeeMorePanel extends StatefulWidget {
@@ -267,7 +270,14 @@ class _SeeMorePanelState extends State<SeeMorePanel> {
                   onSubmitted: (text) async {
                     await _submit(mr.id);
                   },
-                ))
+                )),
+            // Visibility(
+            //   visible: !hide,
+            //   child: Padding(
+            //       padding: EdgeInsets.only(
+            //           top:
+            //               PersistentKeyboardHeight.of(context).keyboardHeight)),
+            //)
           ],
         );
       },

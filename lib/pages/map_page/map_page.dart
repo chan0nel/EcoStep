@@ -183,15 +183,15 @@ class _MapPageState extends State<MapPage>
                 value.scrollController1 = sc;
                 return Column(
                   children: [
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 10),
-                      width: 50,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: value2.curTheme
-                            ? value2.theme.colorScheme.background
-                            : Colors.white,
+                    UnconstrainedBox(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 10),
+                        width: 50,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.black26,
+                        ),
                       ),
                     ),
                     TabBar(
